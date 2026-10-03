@@ -1,22 +1,40 @@
-## Development
+# Raymond Cen portfolio
 
-When starting the dev server, use background mode:
+Static personal portfolio for recruiters. Astro 7, Tailwind v4, content collections, hosted on Cloudflare Pages. No backend, database, CMS or UI library.
 
-```
-astro dev --background
-```
+## Source of truth
+Read before any layout, styling or content work:
+- docs/portfolio-handoff.md: stack decisions, design tokens, implementation notes
+- docs/wireframes.pdf: layout and behavior notes
 
-Manage the background server with `astro dev stop`, `astro dev status`, and `astro dev logs`.
+If a request conflicts with these, say so before changing anything.
 
-## Documentation
+## Structure
+- Routes: index, experience, projects, resume, about, 404. Don't add others.
+- Shared shell: src/layouts/BaseLayout.astro (sticky header, footer icons, fonts, meta)
+- Content: src/content/projects/ and src/content/experience/, one .md per entry, schemas in src/content.config.ts
+- Images: src/assets/ so Astro optimizes them
+- Static files: public/ (resume PDF, og-image, favicon, robots.txt)
 
-Full documentation: https://docs.astro.build
+## Rules
+- Tailwind tokens live in src/styles/global.css under @theme. Body text color is `ink`, never `base`.
+- Hover effects use the diagonal wash in the handoff, not plain color transitions.
+- Never hardcode project or experience entries in pages. Loop over collections.
+- No client-side JS unless the feature can't work without it.
+- Every interactive element needs a visible focus ring and must work by keyboard.
+- Ask before adding a dependency.
+- Leave [bracketed] placeholders in place. Never invent content, metrics or dates.
 
-Consult these guides before working on related tasks:
+## Commands
+- Dev server: `astro dev --background`, then `astro dev stop`, `astro dev status`, `astro dev logs`
+- Build: `npm run build`
+- Type and content check: `npx astro check`
 
-- [Adding pages, dynamic routes, or middleware](https://docs.astro.build/en/guides/routing/)
-- [Working with Astro components](https://docs.astro.build/en/basics/astro-components/)
-- [Using React, Vue, Svelte, or other framework components](https://docs.astro.build/en/guides/framework-components/)
-- [Adding or managing content](https://docs.astro.build/en/guides/content-collections/)
-- [Adding styles or using Tailwind](https://docs.astro.build/en/guides/styling/)
-- [Supporting multiple languages](https://docs.astro.build/en/guides/internationalization/)
+Run the build and check before saying a task is done.
+
+## Astro docs
+Consult before related work:
+- Routing: https://docs.astro.build/en/guides/routing/
+- Components: https://docs.astro.build/en/basics/astro-components/
+- Content collections: https://docs.astro.build/en/guides/content-collections/
+- Styling and Tailwind: https://docs.astro.build/en/guides/styling/
