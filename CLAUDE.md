@@ -4,7 +4,7 @@ Static personal portfolio for recruiters. Astro 7, Tailwind v4, content collecti
 
 ## Source of truth
 Read before any layout, styling or content work:
-- docs/portfolio-handoff.md: stack decisions, design tokens, implementation notes
+- docs/handoff.md: stack decisions, design tokens, implementation notes
 - docs/wireframes.pdf: layout and behavior notes
 
 If a request conflicts with these, say so before changing anything.
