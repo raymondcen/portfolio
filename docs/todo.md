@@ -17,7 +17,6 @@
 - SEO, accessibility and Lighthouse pass
 
 ## Setup and infrastructure
-- CLAUDE.md: change `docs/wireframes.pdf` to `docs/wireframe.pdf`
 - README: add "Site content and resume: all rights reserved"
 - Set `site` in astro.config.mjs to the pages.dev URL until a domain is bought
 - Work on a branch per page so each gets a preview URL and CI run
