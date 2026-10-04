@@ -1,6 +1,5 @@
-docs/CLAUDE.md
-docs/hooks/
 .claude/settings.local.json
+.claude/session.md
 
 # Logs
 logs

@@ -64,12 +64,11 @@ handoff.md and the wireframe are the plan. A deviation is any change to scope, r
 1. `npx astro check` and `npm run build` pass.
 2. todo.md updated if needed.
 3. handoff.md updated if the plan changed.
-4. Append ` | <one-line summary>` to this session's line under Recent sessions. Replace it if the session does more work later.
+4. Append ` | <one-line summary>` to this session's line in .claude/session.md. Replace it if the session does more work later.
 
 Then report which docs changed, or say none did.
 
 ## Session
-A SessionStart hook (docs/hooks/session-id.mjs) writes this block and prints the session ID at startup. Don't edit inside the markers except the summary in step 4 above.
+A SessionStart hook (.claude/hooks/session-id.mjs) writes the current and recent session IDs to .claude/session.md, which is local to each machine and gitignored. Don't edit that file except to add the task summary.
 
-<!-- session:start -->
-<!-- session:end -->
+@.claude/session.md
