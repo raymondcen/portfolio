@@ -1,5 +1,6 @@
 docs/
 /CLAUDE.md
+.claude/settings.local.json
 
 # Logs
 logs
