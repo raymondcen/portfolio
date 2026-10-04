@@ -1,5 +1,5 @@
-docs/
-/CLAUDE.md
+docs/CLAUDE.md
+docs/hooks/
 .claude/settings.local.json
 
 # Logs
