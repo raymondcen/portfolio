@@ -60,6 +60,7 @@ handoff.md and the wireframe are the plan. A deviation is any change to scope, r
 - Ask me before making a design or scope deviation. Implementation details that don't change behavior don't count.
 - Once agreed, edit the affected handoff.md section so it states the current decision, update matching todo.md items and add one line to `## Change log` at the end of handoff.md: `YYYY-MM-DD: what changed. Why.` Create the section if missing.
 - If the work matches the plan, leave both files alone. No rewording, reformatting or restating.
+- Cloudflare dashboard settings are not visible from the repo. When I mention changing one (builds, previews, Access, domains, DNS), update docs/handoff.md section 8 in the same task. If a wrangler.jsonc change affects anything listed in section 8, update section 8 too.
 
 ### End of task
 1. `npx astro check` and `npm run build` pass.

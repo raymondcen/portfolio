@@ -159,6 +159,40 @@ Replace every `[bracketed]` placeholder before launch.
 - [ ] Resume page tested on an actual iPhone
 - [ ] Diagonal wash tested in Safari, Chrome and Firefox and with reduced motion turned on
 
+## 8. Infrastructure
+
+Settings that live in the Cloudflare dashboard, not the repo. Update this section whenever one changes.
+
+### Hosting
+
+- Cloudflare Workers with Workers Builds, connected to github.com/raymondcen/portfolio
+- Production branch: `main`. Deploys to https://rcen.dev via the custom domain route in `wrangler.jsonc`
+- workers.dev URL disabled (`workers_dev: false`)
+- Account workers.dev subdomain: `raymondcen07`
+
+### Previews
+
+- Preview Builds enabled for non-production branches
+- Preview command: `npx wrangler preview` (open beta; requires the empty `"previews": {}` block in `wrangler.jsonc`)
+- Fallback if the beta command breaks: `npx wrangler versions upload --preview-alias <branch>`
+- URL pattern: `<branch>-portfolio.raymondcen07.workers.dev`
+- `dev` branch preview: https://dev-portfolio.raymondcen07.workers.dev
+- workers.dev previews send `X-Robots-Tag: noindex`
+
+### Access
+
+Cloudflare Zero Trust, free plan.
+
+- Scope: previews only. rcen.dev stays public
+- Policy: Cloudflare account (only account members can sign in)
+- Session duration: 1 week
+
+### Domain
+
+- rcen.dev, registered with Cloudflare Registrar
+- Renewal date: see the Cloudflare dashboard under Domain Registration
+
 ## Change log
 
 2026-10-05: Hosting moved from Cloudflare Pages to Cloudflare Workers static assets. Keeps backend features available later without a migration.
+2026-10-05: Added section 8 (Infrastructure) for Cloudflare dashboard settings. They are not visible from the repo and need one place to stay current.
