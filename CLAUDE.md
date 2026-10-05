@@ -4,8 +4,10 @@ Static personal portfolio for recruiters. Astro 7, Tailwind v4, content collecti
 
 ## Source of truth
 Read before any layout, styling or content work:
-- docs/handoff.md: stack decisions, design tokens, implementation notes
+- docs/design.md: stack decisions, design tokens, implementation notes
 - docs/wireframe.pdf: layout and behavior notes
+
+Open work is tracked in GitHub Issues.
 
 If a request conflicts with these, say so before changing anything.
 
@@ -43,34 +45,5 @@ Consult before related work:
 ## Writing
 Site copy and docs: no em dashes, no serial comma, no filler.
 
-## Workflow
-A task is one request that ends with a change to the repo. Questions and explanations are not tasks and trigger none of the updates below.
-
-At session start, read docs/todo.md. Open docs/handoff.md sections only when the task touches them.
-
-### docs/todo.md
-After each task:
-- Move finished items to `## Done` at the bottom with the date. Keep the 10 most recent.
-- Add follow-ups or subtasks the task uncovered under the right heading.
-- Add detail to an item only when the next session needs it: file paths, blockers, open questions.
-- If nothing changed, leave the file alone.
-
-### docs/handoff.md
-handoff.md and the wireframe are the plan. A deviation is any change to scope, routes, tokens, layout, behavior, dependencies or hosting compared with what handoff.md says.
-- Ask me before making a design or scope deviation. Implementation details that don't change behavior don't count.
-- Once agreed, edit the affected handoff.md section so it states the current decision, update matching todo.md items and add one line to `## Change log` at the end of handoff.md: `YYYY-MM-DD: what changed. Why.` Create the section if missing.
-- If the work matches the plan, leave both files alone. No rewording, reformatting or restating.
-- Cloudflare dashboard settings are not visible from the repo. When I mention changing one (builds, previews, Access, domains, DNS), update docs/handoff.md section 8 in the same task. If a wrangler.jsonc change affects anything listed in section 8, update section 8 too.
-
-### End of task
-1. `npx astro check` and `npm run build` pass.
-2. todo.md updated if needed.
-3. handoff.md updated if the plan changed.
-4. Append ` | <one-line summary>` to this session's line in .claude/session.md. Replace it if the session does more work later.
-
-Then report which docs changed, or say none did.
-
-## Session
-A SessionStart hook (.claude/hooks/session-id.mjs) writes the current and recent session IDs to .claude/session.md, which is local to each machine and gitignored. Don't edit that file except to add the task summary.
-
-@.claude/session.md
+## Definition of done
+`npx astro check` and `npm run build` pass. If a change alters scope, routes, tokens, layout, behavior, dependencies or hosting, ask first, then update docs/design.md to match.
