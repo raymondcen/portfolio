@@ -20,7 +20,7 @@ If a request conflicts with these, say so before changing anything.
 
 ## Rules
 - Tailwind tokens live in src/styles/global.css under @theme. Body text color is `ink`, never `base`.
-- Hover effects use the diagonal wash in the handoff, not plain color transitions.
+- Hover effects use the diagonal wash in docs/design.md, not plain color transitions.
 - Never hardcode project or experience entries in pages. Loop over collections.
 - No client-side JS unless the feature can't work without it.
 - Every interactive element needs a visible focus ring and must work by keyboard.
