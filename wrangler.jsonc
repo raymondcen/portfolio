@@ -1,6 +1,9 @@
 {
   "name": "portfolio",
   "compatibility_date": "2026-10-05",
+  "routes": [
+    { "pattern": "rcen.dev", "custom_domain": true }
+  ],
   "assets": {
     "directory": "./dist",
     "not_found_handling": "404-page"

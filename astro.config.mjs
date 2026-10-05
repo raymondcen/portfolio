@@ -7,7 +7,7 @@ import icon from 'astro-icon';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://raymcen.dev', //placeholder value
+  site: 'https://rcen.dev',
   vite: {
     plugins: [tailwindcss()]
   },
