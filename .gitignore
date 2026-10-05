@@ -1,6 +1,14 @@
 .claude/settings.local.json
 .claude/session.md
 
+.dev.vars
+.dev.vars.*
+.DS_Store
+Thumbs.db
+.idea/
+.claude/hooks/
+docs/todo.md
+
 # Logs
 logs
 *.log
