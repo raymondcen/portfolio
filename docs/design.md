@@ -123,16 +123,3 @@ Mark the current page with `aria-current="page"`.
 
 **Not designed yet**
 `/404`. Keep it minimal: same header, a one-line message and a link home.
-
-## 5. Quality targets
-
-- [ ] Lighthouse: Performance 95+, Accessibility 100, Best Practices 100, SEO 100
-- [ ] Landing page weight under 200 KB
-- [ ] Keyboard-only pass: every link, button and accordion reachable with a visible focus ring
-- [ ] Skip-to-content link on every page
-- [ ] Resume page tested on an actual iPhone
-- [ ] Diagonal wash tested in Safari, Chrome and Firefox and with reduced motion turned on
-
-## Change log
-
-2026-10-05: Hosting moved from Cloudflare Pages to Cloudflare Workers static assets. Keeps backend features available later without a migration.
