@@ -124,25 +124,7 @@ Mark the current page with `aria-current="page"`.
 **Not designed yet**
 `/404`. Keep it minimal: same header, a one-line message and a link home.
 
-## 5. Content still missing
-
-Replace every `[bracketed]` placeholder before launch.
-
-- [ ] Email address for the mailto link
-- [ ] LinkedIn and GitHub profile URLs
-- [ ] Experience: roles, dates and bullets for Novak Lab and the IT job
-- [ ] Experience: IT employer name and location
-- [ ] Experience: confirm order (newest first)
-- [ ] Projects: your role on FracFeedExtractor, DubBetter Ring, Heart Disease Predictor and BrainBurst
-- [ ] Projects: team size for DubBetter Ring, Heart Disease Predictor and BrainBurst
-- [ ] Projects: role bullets for every expanded project
-- [ ] Projects: which projects have a screenshot or diagram (hide the image slot for the rest)
-- [ ] Small Shell: add a repo link or cut it
-- [ ] DubBetter Ring: add context to the 70% figure (number of classes, live on edge hardware)
-- [ ] Resume PDF file
-- [ ] About page content (layout is ready; placeholder paragraphs in the same panel as Experience)
-
-## 6. Quality targets
+## 5. Quality targets
 
 - [ ] Lighthouse: Performance 95+, Accessibility 100, Best Practices 100, SEO 100
 - [ ] Landing page weight under 200 KB
