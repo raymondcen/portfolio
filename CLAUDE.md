@@ -1,6 +1,6 @@
 # Raymond Cen portfolio
 
-Static personal portfolio for recruiters. Astro 7, Tailwind v4, content collections, hosted on Cloudflare Pages. No backend, database, CMS or UI library.
+Static personal portfolio for recruiters. Astro 7, Tailwind v4, content collections, hosted on Cloudflare Workers (static assets only). No backend, database, CMS or UI library.
 
 ## Source of truth
 Read before any layout, styling or content work:
@@ -29,6 +29,7 @@ If a request conflicts with these, say so before changing anything.
 - Dev server: `astro dev --background`, then `astro dev stop`, `astro dev status`, `astro dev logs`
 - Build: `npm run build`
 - Type and content check: `npx astro check`
+- Preview built dist the way Workers serves it: `npx wrangler dev`
 
 Run the build and check before saying a task is done.
 

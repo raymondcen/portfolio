@@ -23,8 +23,9 @@ The original plan described a single-page landing. The wireframes replace it. Ig
 | Skills and Contact sections | Omitted. Contact is the footer icons |
 | About section on the landing page | Its own `/about` page. Content not decided yet |
 | Plain color fade on hover | Diagonal color wash on every hover |
+| Cloudflare Pages | Cloudflare Workers (static assets) |
 
-Unchanged: Astro, Tailwind, MDX content collections, Cloudflare Pages, SEO, accessibility and performance targets.
+Unchanged: Astro, Tailwind, MDX content collections, SEO, accessibility and performance targets.
 
 Sitemap: `/`, `/experience`, `/projects`, `/resume`, `/about`, `/resume.pdf`, `/404`.
 
@@ -47,8 +48,8 @@ Sitemap: `/`, `/experience`, `/projects`, `/resume`, `/about`, `/resume.pdf`, `/
 | Service | Role in this site |
 |---|---|
 | **GitHub** | Source repo. `main` is production. MIT license for code; written content and resume all rights reserved. |
-| **Cloudflare Pages** | Hosting. Connected to the GitHub repo; every push to `main` builds and deploys automatically. Every branch and pull request gets its own preview URL for checking changes before merge. Free tier, unlimited bandwidth, global CDN, automatic HTTPS. |
-| **Cloudflare Registrar** | Domain purchase at cost. Same account as Pages, so DNS and the SSL certificate configure automatically when the custom domain is added. |
+| **Cloudflare Workers** | Hosting with static assets only: `wrangler.jsonc` serves `dist` and returns `404.html` for unknown routes. No Worker script and no adapter. Workers Builds is connected to the GitHub repo; every push to `main` runs build `npm run build` and deploy `npx wrangler deploy`. Non-production branches run `npx wrangler versions upload`, which gives each one a preview URL for checking changes before merge. Free tier, global CDN, automatic HTTPS. Backend features (Workers AI, KV, D1, R2, Cron Triggers) can be added later without migrating. |
+| **Cloudflare Registrar** | Domain purchase at cost. Same account as Workers, so DNS and the SSL certificate configure automatically when the custom domain is added to the Worker. |
 | **Cloudflare Web Analytics** | Visitor counts and referrers (useful for seeing whether recruiters arrive from LinkedIn or a resume link). Enabled from the Cloudflare dashboard. No cookies and no banner required. |
 | **GitHub Actions** | One workflow on pull requests: `astro check` (type-checks content collections), `npm run build` (catches build errors before Cloudflare deploys) and optionally Lighthouse CI against the performance targets. Deployment itself is handled by Cloudflare, not Actions. |
 
@@ -157,3 +158,7 @@ Replace every `[bracketed]` placeholder before launch.
 - [ ] Skip-to-content link on every page
 - [ ] Resume page tested on an actual iPhone
 - [ ] Diagonal wash tested in Safari, Chrome and Firefox and with reduced motion turned on
+
+## Change log
+
+2026-10-05: Hosting moved from Cloudflare Pages to Cloudflare Workers static assets. Keeps backend features available later without a migration.
