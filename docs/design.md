@@ -31,8 +31,8 @@ Sitemap: `/`, `/experience`, `/projects`, `/resume`, `/about`, `/resume.pdf`, `/
 | **Tailwind CSS** | All styling. Design tokens from section 3 go in the Tailwind theme (`bg`, `selected`, `ink`, `sub`, `panel`, `panel-2`, `divider`) so classes read `text-ink hover:text-selected`. Name the body text color `ink` in Tailwind: `text-base` is already Tailwind's default font-size class and would collide. The wash animation lives in one small custom CSS file because it uses gradients and masks Tailwind doesn't cover cleanly. Unused classes are stripped at build. |
 | **Astro Content Collections + Zod** | Projects and experience entries live as Markdown files in `src/content/projects/` and `src/content/experience/`, one file per entry. Frontmatter holds structured fields (title, dates, summary, metric, tags, GitHub URL, image, display order). The body holds the expanded text. A Zod schema checks every file at build, so a missing title or broken date fails the build instead of shipping. The Projects and Experience pages loop over these collections. Adding a project means adding one file. |
 | **@astrojs/mdx** | Optional now. It was in the plan for case study pages, which were cut. Plain Markdown covers the expanded project text. Add MDX later only if an expanded project needs an embedded component such as a chart. |
-| **astro-icon** | Inlines SVG icons at build time: LinkedIn, mail, GitHub, Back chevron, accordion chevron, external-link arrow and the 嘉安 mark as a local SVG. No icon font and no runtime cost. Plain inline SVG is an acceptable substitute that avoids the dependency. |
-| **@astrojs/sitemap** | Generates `sitemap.xml` at build from the routes. Paired with a static `robots.txt` in `public/`. |
+| **astro-icon** | Inlines SVG icons at build time: LinkedIn, mail, GitHub, Back chevron, accordion chevron and external-link arrow. No icon font and no runtime cost. Plain inline SVG is an acceptable substitute that avoids the dependency. The 嘉安 mark does not use astro-icon: `BaseLayout` imports `src/assets/an.svg?raw` and inlines it. |
+| **@astrojs/sitemap** | Generates `sitemap.xml` at build from the routes. Paired with a static `robots.txt` in `public/`. Until launch, `BaseLayout` emits `<meta name="robots" content="noindex">` on every page while `SITE_LIVE` is false. `/404` passes `noindex` so it stays out of the index after launch. |
 | **Fontsource (Newsreader)** | Self-hosts the Newsreader font from the npm package instead of loading from Google. Import only weights 400, 500 and 600. Faster and no third-party request. |
 
 ### Hosting and services
@@ -50,7 +50,7 @@ Sitemap: `/`, `/experience`, `/projects`, `/resume`, `/about`, `/resume.pdf`, `/
 
 - `Raymond-Cen-Resume.pdf`: embedded on `/resume` and used by the Download button
 - `og-image.png` (1200x630): preview image when the site is shared on LinkedIn
-- `robots.txt`, `favicon.svg`
+- `robots.txt`, `favicon.svg`, `favicon-32.png`, `apple-touch-icon.png`
 
 ### Not used
 
@@ -111,19 +111,37 @@ How it works: a 135° linear gradient with a hard color stop (green on one half,
 Embedded PDFs render poorly on iOS Safari and most mobile browsers: often only the first page, or nothing. Plan a fallback, either a first-page image with an "Open PDF" link on small screens or a direct link. Name the file `Raymond-Cen-Resume.pdf`.
 
 **嘉安 mark**
-Newsreader has no CJK glyphs. Use an inline SVG of the characters, not a CJK web font. A full CJK font is several MB and would break the 200 KB page budget. The mark is 嘉安 stacked vertically, 嘉 above 安. Glyphs are Noto Serif SC Bold converted to SVG paths; no font loads at runtime.
+Newsreader has no CJK glyphs. Use an inline SVG of the characters, not a CJK web font. A full CJK font is several MB and would break the 200 KB page budget. The mark is 嘉安 side by side, 嘉 left of 安. Glyphs are Noto Serif SC Bold converted to SVG paths; no font loads at runtime.
 
-`src/assets/an.svg` has viewBox `0 0 939 1940` with both glyphs at full scale and a 62-unit gap. Fill `#1C653A` sits on a wrapping `<g>`, not on each path, so the `fill="currentColor"` replace in `BaseLayout.astro` still recolors both glyphs. The SVG is portrait (about 1:2), so it is sized by height: `h-10 w-auto` on mobile, `sm:h-12` from 640px up. The Back chevron uses the same heights (`size-10 sm:size-12`) so the header is the same height on every page.
+`src/assets/an.svg` has viewBox `0 0 1937 939` (landscape, about 2:1). Fill `#1C653A` sits on a wrapping `<g>`, not on each path, so the `fill="currentColor"` replace in `BaseLayout.astro` recolors both glyphs. `BaseLayout` also strips the C2PA metadata.
 
-Favicon (`public/favicon.svg`, `favicon-32.png`, `apple-touch-icon.png`): the same stacked 嘉安 on the `#F7F6F1` rounded square, with the same 1127 viewBox, corner radius and padding as before. Known trade-off: 嘉 is illegible at 16px.
+Favicon (`public/favicon.svg`, `favicon-32.png`, `apple-touch-icon.png`): 嘉安 side by side on the `#F7F6F1` rounded square, viewBox `0 0 1127 1127`. Known trade-off: 嘉 is illegible at 16px.
 
-The mark is decorative: not a link, not focusable and not selectable (`select-none`). The SVG is `aria-hidden` since the name sits next to it in the header.
+The mark is decorative: not a link, not focusable and not selectable (`select-none`). The SVG is `aria-hidden` since the name sits next to it in the header. It shows on `/` only; every other page shows Back in the same slot.
+
+**Header**
+One row on every page, so "Raymond Cen" sits at the same y everywhere. Sizes are CSS variables in `:root` in `src/styles/global.css`, used through Tailwind's `(--var)` shorthand:
+
+| Variable | Value | Use |
+|---|---|---|
+| `--header-pad` | `1.25rem` | Top and bottom padding (`py-(--header-pad)`) |
+| `--header-row` | `4.5rem` | Fixed grid row (`grid-rows-[var(--header-row)]`) and mark height (`h-(--header-row) w-auto`) |
+| `--header-back` | `3rem` | Back chevron (`size-(--header-back)`) |
+
+- Header height is `2 x --header-pad + --header-row` (112px) on every page. The row is fixed, so the left slot never changes the header height.
+- Grid is `1fr auto 1fr`: left slot, name, empty right column. `items-center` centers the mark, Back and the name on one vertical center.
+- The left slot is `justify-self-start`, so the mark and the Back link share the left edge (`px-6`, `sm:px-8`).
+- The mark fills the row: 72px tall, about 149px wide. Same size on desktop and mobile.
+- Header and footer are sticky with a `bg` background. The mark stays inside the header, so content never scrolls under it.
+- Change a size by editing the variable, not the classes. Content taller than `--header-row` overflows the row instead of growing the header.
+- Known issue: at 375px the 149px mark widens the left column and "Raymond Cen" wraps to two lines on `/`. Its center stays aligned. Fix with a smaller `--header-row` below `sm` if it matters.
+- Not done yet: in-page anchors and keyboard focus can land under the sticky header. Add `scroll-padding-top: calc(var(--header-row) + 2 * var(--header-pad))` on `html` when the first page with anchors ships.
 
 **Fonts**
 Self-host Newsreader (Fontsource package), use `font-display: swap` and preload the regular weight. Only weights 400, 500 and 600 are used.
 
 **Home page SEO**
-Home shows no positioning text, so the `<title>`, meta description and Open Graph tags must carry it. Example: "Raymond Cen | CS and Data Science, Oregon State. ML pipelines and data systems."
+Home shows no positioning text, so the `<title>`, meta description and Open Graph tags must carry it. Home title: "Raymond Cen | CS and Data Science, Oregon State". Other pages use "<Page> | Raymond Cen" (404: "Page not found | Raymond Cen"). Meta descriptions are still `[bracketed]` placeholders.
 
 **Nav state**
 Mark the current page with `aria-current="page"`.
