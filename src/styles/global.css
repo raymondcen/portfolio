@@ -1,1 +1,33 @@
 @import "tailwindcss";
+@import "@fontsource/newsreader/400.css";
+@import "@fontsource/newsreader/500.css";
+@import "@fontsource/newsreader/600.css";
+
+@theme {
+  --color-bg: #F7F6F1;
+  --color-selected: #1C653A;
+  --color-ink: #171717;
+  --color-sub: #64635F;
+  --color-panel: #E8E7E2;
+  --color-panel-2: #DEDDD8;
+  --color-divider: #CFCEC8;
+
+  --font-serif: "Newsreader", Georgia, "Times New Roman", serif;
+}
+
+.wash {
+  background-image: linear-gradient(135deg, #1C653A 50%, #171717 50%);
+  background-size: 300% 300%;
+  background-position: 100% 100%;           /* ink showing */
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  transition: background-position 300ms ease-out;
+}
+@media (hover: hover) {
+  .wash:hover { background-position: 0 0; } /* green swept in */
+}
+.wash:focus-visible { background-position: 0 0; }
+@media (prefers-reduced-motion: reduce) {
+  .wash { transition: none; }
+}
