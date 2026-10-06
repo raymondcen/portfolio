@@ -113,7 +113,7 @@ Embedded PDFs render poorly on iOS Safari and most mobile browsers: often only t
 **嘉安 mark**
 Newsreader has no CJK glyphs. Use an inline SVG of the characters, not a CJK web font. A full CJK font is several MB and would break the 200 KB page budget. The mark is 嘉安 stacked vertically, 嘉 above 安. Glyphs are Noto Serif SC Bold converted to SVG paths; no font loads at runtime.
 
-`src/assets/an.svg` has viewBox `0 0 939 1940` with both glyphs at full scale and a 62-unit gap. Fill `#1C653A` sits on a wrapping `<g>`, not on each path, so the `fill="currentColor"` replace in `BaseLayout.astro` still recolors both glyphs. The SVG is portrait (about 1:2), so it renders at `w-12 h-auto` instead of `size-12`. This makes the header taller. If it crowds the name on mobile, fall back to `w-8 h-auto`.
+`src/assets/an.svg` has viewBox `0 0 939 1940` with both glyphs at full scale and a 62-unit gap. Fill `#1C653A` sits on a wrapping `<g>`, not on each path, so the `fill="currentColor"` replace in `BaseLayout.astro` still recolors both glyphs. The SVG is portrait (about 1:2), so it is sized by height: `h-10 w-auto` on mobile, `sm:h-12` from 640px up. The Back chevron uses the same heights (`size-10 sm:size-12`) so the header is the same height on every page.
 
 Favicon (`public/favicon.svg`, `favicon-32.png`, `apple-touch-icon.png`): the same stacked 嘉安 on the `#F7F6F1` rounded square, with the same 1127 viewBox, corner radius and padding as before. Known trade-off: 嘉 is illegible at 16px.
 
