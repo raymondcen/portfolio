@@ -15,6 +15,14 @@
   --font-serif: "Newsreader", Georgia, "Times New Roman", serif;
 }
 
+/* Header: height = 2 x pad + row. The row is sized by the text (Back, name), never by the mark.
+   The mark hangs from the row top into the bottom pad, stopping 0.5rem short of the header edge. */
+:root {
+  --header-pad: 2rem;
+  --header-row: 3rem;
+  --header-mark: calc(var(--header-row) + var(--header-pad) - 0.5rem);
+}
+
 .wash {
   background-image: linear-gradient(135deg, #1C653A 50%, #171717 50%);
   background-size: 300% 300%;
