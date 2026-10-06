@@ -43,6 +43,7 @@ Sitemap: `/`, `/experience`, `/projects`, `/resume`, `/about`, `/resume.pdf`, `/
 | **Cloudflare Workers** | Hosting with static assets only: `wrangler.jsonc` serves `dist` and returns `404.html` for unknown routes. No Worker script and no adapter. Workers Builds is connected to the GitHub repo; every push to `main` runs build `npm run build` and deploy `npx wrangler deploy`. Non-production branches get preview URLs from Workers Builds. Free tier, global CDN, automatic HTTPS. Backend features (Workers AI, KV, D1, R2, Cron Triggers) can be added later without migrating. |
 | **Cloudflare Registrar** | Domain purchase at cost. Same account as Workers, so DNS and the SSL certificate configure automatically when the custom domain is added to the Worker. |
 | **Cloudflare Web Analytics** | Visitor counts and referrers (useful for seeing whether recruiters arrive from LinkedIn or a resume link). Enabled from the Cloudflare dashboard. No cookies and no banner required. |
+| **Cloudflare Email Routing** | Forwards a `@rcen.dev` alias to the personal inbox, so the personal address never appears on the site. If the alias draws spam, disable it and create a new one. Free, same account. See "Email spam protection" in section 4. |
 | **GitHub Actions** | One workflow on pull requests: `astro check` (type-checks content collections), `npm run build` (catches build errors before Cloudflare deploys) and optionally Lighthouse CI against the performance targets. Deployment itself is handled by Cloudflare, not Actions. |
 
 ### Static files in `public/`
@@ -120,6 +121,13 @@ Home shows no positioning text, so the `<title>`, meta description and Open Grap
 
 **Nav state**
 Mark the current page with `aria-current="page"`.
+
+**Email spam protection**
+Scrapers harvest addresses from `mailto:` links and plain text in HTML. Approach:
+- The footer shows a Cloudflare Email Routing alias on `rcen.dev`, never the personal address. A spammed alias is disabled and replaced without touching the inbox.
+- The address never appears in the built HTML. The repo and `dist` hold only its parts (for example user and domain stored separately), and a small inline script joins them and inserts the footer email link on page load. This is the one exception to the no client-side JS rule, since the protection can't work without it.
+- Without JS the email icon is not rendered. LinkedIn stays as the contact path.
+- After deploy, check that the full address does not appear in view-source or in `curl https://rcen.dev`.
 
 **Not designed yet**
 `/404`. Keep it minimal: same header, a one-line message and a link home.
