@@ -31,7 +31,7 @@ Sitemap: `/`, `/experience`, `/projects`, `/resume`, `/about`, `/resume.pdf`, `/
 | **Tailwind CSS** | All styling. Design tokens from section 3 go in the Tailwind theme (`bg`, `selected`, `ink`, `sub`, `panel`, `panel-2`, `divider`) so classes read `text-ink hover:text-selected`. Name the body text color `ink` in Tailwind: `text-base` is already Tailwind's default font-size class and would collide. The wash animation lives in one small custom CSS file because it uses gradients and masks Tailwind doesn't cover cleanly. Unused classes are stripped at build. |
 | **Astro Content Collections + Zod** | Projects and experience entries live as Markdown files in `src/content/projects/` and `src/content/experience/`, one file per entry. Frontmatter holds structured fields (title, dates, summary, metric, tags, GitHub URL, image, display order). The body holds the expanded text. A Zod schema checks every file at build, so a missing title or broken date fails the build instead of shipping. The Projects and Experience pages loop over these collections. Adding a project means adding one file. |
 | **@astrojs/mdx** | Optional now. It was in the plan for case study pages, which were cut. Plain Markdown covers the expanded project text. Add MDX later only if an expanded project needs an embedded component such as a chart. |
-| **astro-icon** | Inlines SVG icons at build time: LinkedIn, mail, GitHub, Back chevron, accordion chevron, external-link arrow and the 安 symbol as a local SVG. No icon font and no runtime cost. Plain inline SVG is an acceptable substitute that avoids the dependency. |
+| **astro-icon** | Inlines SVG icons at build time: LinkedIn, mail, GitHub, Back chevron, accordion chevron, external-link arrow and the 嘉安 mark as a local SVG. No icon font and no runtime cost. Plain inline SVG is an acceptable substitute that avoids the dependency. |
 | **@astrojs/sitemap** | Generates `sitemap.xml` at build from the routes. Paired with a static `robots.txt` in `public/`. |
 | **Fontsource (Newsreader)** | Self-hosts the Newsreader font from the npm package instead of loading from Google. Import only weights 400, 500 and 600. Faster and no third-party request. |
 
@@ -61,7 +61,7 @@ No backend, database, CMS, contact form, UI component library, animation library
 | Token | Hex | Use |
 |---|---|---|
 | bg | `#F7F6F1` | Page background |
-| selected | `#1C653A` | Hover, focus, 安 |
+| selected | `#1C653A` | Hover, focus, 嘉安 |
 | ink | `#171717` | Body text |
 | sub | `#64635F` | Secondary text, tags |
 | panel | `#E8E7E2` | Experience and Projects card |
@@ -110,8 +110,14 @@ How it works: a 135° linear gradient with a hard color stop (green on one half,
 **Resume PDF embed**
 Embedded PDFs render poorly on iOS Safari and most mobile browsers: often only the first page, or nothing. Plan a fallback, either a first-page image with an "Open PDF" link on small screens or a direct link. Name the file `Raymond-Cen-Resume.pdf`.
 
-**安 symbol**
-Newsreader has no CJK glyphs. Use an inline SVG of the character, not a CJK web font. A full CJK font is several MB and would break the 200 KB page budget. The symbol is decorative: not a link, not focusable and not selectable (`select-none`). The SVG is `aria-hidden` since the name sits next to it in the header.
+**嘉安 mark**
+Newsreader has no CJK glyphs. Use an inline SVG of the characters, not a CJK web font. A full CJK font is several MB and would break the 200 KB page budget. The mark is 嘉安 stacked vertically, 嘉 above 安. Glyphs are Noto Serif SC Bold converted to SVG paths; no font loads at runtime.
+
+`src/assets/an.svg` has viewBox `0 0 939 1940` with both glyphs at full scale and a 62-unit gap. Fill `#1C653A` sits on a wrapping `<g>`, not on each path, so the `fill="currentColor"` replace in `BaseLayout.astro` still recolors both glyphs. The SVG is portrait (about 1:2), so it renders at `w-12 h-auto` instead of `size-12`. This makes the header taller. If it crowds the name on mobile, fall back to `w-8 h-auto`.
+
+Favicon (`public/favicon.svg`, `favicon-32.png`, `apple-touch-icon.png`): the same stacked 嘉安 on the `#F7F6F1` rounded square, with the same 1127 viewBox, corner radius and padding as before. Known trade-off: 嘉 is illegible at 16px.
+
+The mark is decorative: not a link, not focusable and not selectable (`select-none`). The SVG is `aria-hidden` since the name sits next to it in the header.
 
 **Fonts**
 Self-host Newsreader (Fontsource package), use `font-display: swap` and preload the regular weight. Only weights 400, 500 and 600 are used.
