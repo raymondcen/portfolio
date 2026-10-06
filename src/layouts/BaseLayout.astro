@@ -63,8 +63,9 @@ const socials = [
       {isHome ? (
         <span class="justify-self-start select-none text-selected" set:html={an} />
       ) : (
-        <a href="/" class={`wash flex items-center gap-1 justify-self-start text-lg ${focusRing}`}>
-          <Icon name="lucide:chevron-left" class="size-5 text-ink" aria-hidden="true" />
+        <a href="/" class={`wash flex items-center gap-1 justify-self-start text-2xl leading-none ${focusRing}`}>
+          {/* Negative margins trim the empty side padding in the chevron's 24-unit viewBox */}
+          <Icon name="lucide:chevron-left" class="-mx-2 size-12 text-ink" aria-hidden="true" />
           Back
         </a>
       )}
