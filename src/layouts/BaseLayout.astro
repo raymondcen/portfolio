@@ -1,1 +1,86 @@
-<!-- need to add <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} /> -->
+---
+import { Icon } from 'astro-icon/components';
+import anSvg from '../assets/an.svg?raw';
+import newsreader400 from '@fontsource/newsreader/files/newsreader-latin-400-normal.woff2?url';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const isHome = Astro.url.pathname.replace(/\/+$/, '') === '';
+
+// Strip the C2PA metadata and hardcoded fill so the glyph follows currentColor
+const an = anSvg
+  .replace(/<metadata>[\s\S]*?<\/metadata>/, '')
+  .replace(/ xmlns:c2pa="[^"]*"/, '')
+  .replace(/fill="[^"]*"/, 'fill="currentColor"')
+  .replace('<svg', '<svg aria-hidden="true" class="size-9"');
+
+const focusRing = 'rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-selected';
+
+const socials = [
+  { label: 'LinkedIn', icon: 'lucide:linkedin', href: 'https://www.linkedin.com/in/rcen/' },
+  { label: 'Email', icon: 'lucide:mail', href: 'mailto:[email]' },
+  { label: 'GitHub', icon: 'lucide:github', href: 'https://github.com/raymondcen' },
+];
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Raymond Cen" />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <link rel="preload" href={newsreader400} as="font" type="font/woff2" crossorigin />
+  </head>
+  <body class="flex min-h-dvh flex-col bg-bg font-serif text-ink">
+    <a href="#main" class={`sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-20 focus:bg-bg focus:px-3 focus:py-2 ${focusRing}`}>
+      Skip to content
+    </a>
+
+    <header class="sticky top-0 z-10 grid grid-cols-[1fr_auto_1fr] items-center bg-bg px-6 py-5 sm:px-8">
+      {isHome ? (
+        <a href="/" aria-label="Raymond Cen, home" class={`justify-self-start text-selected ${focusRing}`} set:html={an} />
+      ) : (
+        <a href="/" class={`wash flex items-center gap-1 justify-self-start text-lg ${focusRing}`}>
+          <Icon name="lucide:chevron-left" class="size-5 text-ink" aria-hidden="true" />
+          Back
+        </a>
+      )}
+      <p class="text-lg">Raymond Cen</p>
+    </header>
+
+    <main id="main" class="flex-1">
+      <slot />
+    </main>
+
+    <footer class="sticky bottom-0 bg-bg py-6">
+      <slot name="footer" />
+      <ul class="flex justify-center gap-8">
+        {socials.map(({ label, icon, href }) => (
+          <li>
+            <a href={href} aria-label={label} class={`block ${focusRing}`}>
+              <Icon name={icon} class="size-6" aria-hidden="true" />
+            </a>
+          </li>
+        ))}
+      </ul>
+    </footer>
+  </body>
+</html>
