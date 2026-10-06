@@ -111,7 +111,7 @@ How it works: a 135° linear gradient with a hard color stop (green on one half,
 Embedded PDFs render poorly on iOS Safari and most mobile browsers: often only the first page, or nothing. Plan a fallback, either a first-page image with an "Open PDF" link on small screens or a direct link. Name the file `Raymond-Cen-Resume.pdf`.
 
 **安 symbol**
-Newsreader has no CJK glyphs. Use an inline SVG of the character, not a CJK web font. A full CJK font is several MB and would break the 200 KB page budget. Give the link `aria-label="Raymond Cen, home"`.
+Newsreader has no CJK glyphs. Use an inline SVG of the character, not a CJK web font. A full CJK font is several MB and would break the 200 KB page budget. The symbol is decorative: not a link, not focusable and not selectable (`select-none`). The SVG is `aria-hidden` since the name sits next to it in the header.
 
 **Fonts**
 Self-host Newsreader (Fontsource package), use `font-display: swap` and preload the regular weight. Only weights 400, 500 and 600 are used.

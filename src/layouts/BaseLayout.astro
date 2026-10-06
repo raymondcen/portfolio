@@ -61,7 +61,7 @@ const socials = [
 
     <header class="sticky top-0 z-10 grid grid-cols-[1fr_auto_1fr] items-center bg-bg px-6 py-5 sm:px-8">
       {isHome ? (
-        <a href="/" aria-label="Raymond Cen, home" class={`justify-self-start text-selected ${focusRing}`} set:html={an} />
+        <span class="justify-self-start select-none text-selected" set:html={an} />
       ) : (
         <a href="/" class={`wash flex items-center gap-1 justify-self-start text-lg ${focusRing}`}>
           <Icon name="lucide:chevron-left" class="size-5 text-ink" aria-hidden="true" />
