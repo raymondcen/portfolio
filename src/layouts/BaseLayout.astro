@@ -55,10 +55,6 @@ const socials = [
     <link rel="preload" href={newsreader400} as="font" type="font/woff2" crossorigin />
   </head>
   <body class="flex min-h-dvh flex-col bg-bg font-serif text-ink">
-    <a href="#main" class={`sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-20 focus:bg-bg focus:px-3 focus:py-2 ${focusRing}`}>
-      Skip to content
-    </a>
-
     <header class="sticky top-0 z-10 grid grid-cols-[1fr_auto_1fr] grid-rows-[var(--header-row)] items-center bg-bg px-6 py-(--header-pad) sm:px-8">
       {isHome ? (
         <span class="justify-self-start select-none text-selected" set:html={an} />
@@ -72,7 +68,7 @@ const socials = [
       <p class="text-3xl font-medium">Raymond Cen</p>
     </header>
 
-    <main id="main" class="flex-1">
+    <main class="flex-1">
       <slot />
     </main>
 

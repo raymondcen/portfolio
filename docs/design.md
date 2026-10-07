@@ -135,6 +135,7 @@ One row on every page, so "Raymond Cen" sits at the same y everywhere. Sizes are
 - Header and footer are sticky with a `bg` background. The mark stays inside the header, so content never scrolls under it.
 - Change a size by editing the variable, not the classes. Content taller than `--header-row` overflows the row instead of growing the header.
 - Known issue: at 375px the 149px mark widens the left column and "Raymond Cen" wraps to two lines on `/`. Its center stays aligned. Fix with a smaller `--header-row` below `sm` if it matters.
+- No skip link. The header holds at most one link (Back), so keyboard users reach the content in one Tab.
 - Not done yet: in-page anchors and keyboard focus can land under the sticky header. Add `scroll-padding-top: calc(var(--header-row) + 2 * var(--header-pad))` on `html` when the first page with anchors ships.
 
 **Fonts**
