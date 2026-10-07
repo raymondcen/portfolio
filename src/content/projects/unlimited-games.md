@@ -8,6 +8,9 @@ role: Built Snake and started Pac-Man, covering the game logic and how each game
 summary: Classic games rebuilt in C++ with raylib.
 tags: [C++, raylib, CMake]
 github: https://github.com/raymondcen/unlimited-games-but-no-games
+image:
+  src: ../../assets/projects/snake-home.png
+  alt: "Home page of the snake game, labeled Ekans."
 status: archived
 order: 70
 ---
