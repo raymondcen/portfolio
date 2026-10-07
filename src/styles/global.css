@@ -24,18 +24,18 @@
 }
 
 .wash {
-  background-image: linear-gradient(135deg, #1C653A 50%, #171717 50%);
+  background-image: linear-gradient(45deg, #1C653A 50%, #171717 50%);
   background-size: 300% 300%;
-  background-position: 100% 100%;           /* ink showing */
+  background-position: 100% 0;                /* ink showing */
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
   transition: background-position 300ms ease-out;
 }
 @media (hover: hover) {
-  .wash:hover { background-position: 0 0; } /* green swept in */
+  .wash:hover { background-position: 0 100%; } /* green swept in */
 }
-.wash:focus-visible { background-position: 0 0; }
+.wash:focus-visible { background-position: 0 100%; }
 @media (prefers-reduced-motion: reduce) {
   .wash { transition: none; }
 }
