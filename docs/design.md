@@ -124,17 +124,17 @@ One row on every page, so "Raymond Cen" sits at the same y everywhere. Sizes are
 
 | Variable | Value | Use |
 |---|---|---|
-| `--header-pad` | `1.25rem` | Top and bottom padding (`py-(--header-pad)`) |
-| `--header-row` | `4.5rem` | Fixed grid row (`grid-rows-[var(--header-row)]`) and mark height (`h-(--header-row) w-auto`) |
+| `--header-pad` | `1.75rem` | Top and bottom padding (`py-(--header-pad)`) |
+| `--header-row` | `3.5rem` | Fixed grid row (`grid-rows-[var(--header-row)]`) and mark height (`h-(--header-row) w-auto`) |
 | `--header-back` | `3rem` | Back chevron (`size-(--header-back)`) |
 
 - Header height is `2 x --header-pad + --header-row` (112px) on every page. The row is fixed, so the left slot never changes the header height.
 - Grid is `1fr auto 1fr`: left slot, name, empty right column. `items-center` centers the mark, Back and the name on one vertical center.
 - The left slot is `justify-self-start`, so the mark and the Back link share the left edge (`px-6`, `sm:px-8`).
-- The mark fills the row: 72px tall, about 149px wide. Same size on desktop and mobile.
+- The mark fills the row: 56px tall, about 116px wide. Same size on desktop and mobile.
 - Header and footer are sticky with a `bg` background. The mark stays inside the header, so content never scrolls under it.
 - Change a size by editing the variable, not the classes. Content taller than `--header-row` overflows the row instead of growing the header.
-- Known issue: at 375px the 149px mark widens the left column and "Raymond Cen" wraps to two lines on `/`. Its center stays aligned. Fix with a smaller `--header-row` below `sm` if it matters.
+- At 375px "Raymond Cen" fits on one line on every page.
 - No skip link. The header holds at most one link (Back), so keyboard users reach the content in one Tab.
 - Not done yet: in-page anchors and keyboard focus can land under the sticky header. Add `scroll-padding-top: calc(var(--header-row) + 2 * var(--header-pad))` on `html` when the first page with anchors ships.
 

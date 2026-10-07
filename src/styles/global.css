@@ -18,8 +18,8 @@
 /* Header: height = 2 x pad + row, on every page. The mark fills the row; Back and the name
    center on it, so all three share one vertical center. */
 :root {
-  --header-pad: 1.25rem;
-  --header-row: 4.5rem;
+  --header-pad: 1.75rem;
+  --header-row: 3.5rem;
   --header-back: 3rem;
 }
 
