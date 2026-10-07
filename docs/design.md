@@ -76,7 +76,7 @@ Font: Newsreader (serif), Georgia fallback.
 Use native `<details name="projects">` elements. Sharing a `name` gives one-open-at-a-time with zero JavaScript in current Chrome, Safari and Firefox. Older browsers allow several open at once, which is an acceptable fallback. Giving each project an `id` allows links like `/projects#fracfeedextractor` to open a specific project. That part needs a small script.
 
 **Diagonal wash animation**
-Every hover color change uses a diagonal wash: green `#1C653A` sweeps over ink `#171717` at a 135° angle, top-left to bottom-right. Unhovering reverses the sweep. Applies to nav items, Back, footer icons, project titles and chevrons and the Download PDF fill.
+Every hover color change uses a diagonal wash: green `#1C653A` sweeps over ink `#171717` at a 135° angle, bottom-right to top-left. Unhovering reverses the sweep. Applies to nav items, Back, footer icons, project titles and chevrons and the Download PDF fill.
 
 How it works: a 135° linear gradient with a hard color stop (green on one half, ink on the other) sits on an oversized background. Hover slides `background-position` so the green half crosses the element.
 
@@ -102,6 +102,7 @@ How it works: a 135° linear gradient with a hard color stop (green on one half,
 - Text (nav, Back, project titles): the `.wash` pattern above.
 - Download PDF button: same gradient on the button fill without `background-clip: text`; label stays `#F7F6F1`.
 - Footer icons and chevrons: SVG strokes can't use `background-clip`. Put the gradient on a wrapper and use the icon as a CSS `mask-image`.
+- Back chevron, interim: it turns `selected` instantly on hover or keyboard focus of the Back link (`group-hover:text-selected group-focus-visible:text-selected`), with no sweep. Replace it with the mask-image wash above.
 - Wrap hover in `@media (hover: hover)` so phone taps don't leave items stuck green.
 - Reduced motion: no sweep, instant color change.
 - Check that text stays selectable and that screen readers still read it. `color: transparent` with `background-clip: text` is fine for both, but verify in Safari.
