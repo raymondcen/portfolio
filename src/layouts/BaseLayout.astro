@@ -75,13 +75,22 @@ const socials = [
     <footer class="sticky bottom-0 bg-bg py-8">
       <slot name="footer" />
       <ul class="flex justify-center gap-8">
-        {socials.map(({ label, icon, href }) => (
-          <li>
-            <a href={href} aria-label={label} class={`block ${focusRing}`}>
-              <Icon name={icon} class="size-6" aria-hidden="true" />
-            </a>
-          </li>
-        ))}
+        {socials.map(({ label, icon, href }) => {
+          const external = href.startsWith('http');
+          return (
+            <li>
+              <a
+                href={href}
+                aria-label={external ? `${label} (opens in new tab)` : label}
+                target={external ? '_blank' : undefined}
+                rel={external ? 'noopener noreferrer' : undefined}
+                class={`block ${focusRing}`}
+              >
+                <Icon name={icon} class="size-6" aria-hidden="true" />
+              </a>
+            </li>
+          );
+        })}
       </ul>
     </footer>
   </body>

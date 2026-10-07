@@ -147,6 +147,9 @@ Home shows no positioning text, so the `<title>`, meta description and Open Grap
 **Nav state**
 Mark the current page with `aria-current="page"`.
 
+**Footer links**
+LinkedIn and GitHub open in a new tab (`target="_blank" rel="noopener noreferrer"`), and their `aria-label` ends in "(opens in new tab)" so screen readers announce it. `BaseLayout` applies this to any `http` href in `socials`. Email (`mailto:`) opens in the same tab.
+
 **Email spam protection**
 Scrapers harvest addresses from `mailto:` links and plain text in HTML. Approach:
 - The footer shows a Cloudflare Email Routing alias on `rcen.dev`, never the personal address. A spammed alias is disabled and replaced without touching the inbox.
