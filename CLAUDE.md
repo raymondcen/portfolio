@@ -3,9 +3,13 @@
 Static personal portfolio for recruiters. Astro 7, Tailwind v4, content collections, hosted on Cloudflare Workers (static assets only). No backend, database, CMS or UI library.
 
 ## Source of truth
-Read before any layout, styling or content work:
-- docs/design.md: stack decisions, design tokens, implementation notes
-- docs/wireframe.pdf: layout and behavior notes
+At the start of every session, read every file in docs/: Markdown, PDFs and images (PNG, JPG, WebP). Open images and PDFs with the view tool.
+
+Precedence:
+- docs/design.md is the source of truth for behavior, tokens and implementation.
+- Images and PDFs in docs/ are visual references for layout.
+- If they conflict, design.md wins. Flag the conflict instead of guessing.
+- The wireframe PDF still shows Projects as an accordion on desktop. design.md supersedes it for desktop.
 
 Open work is tracked in GitHub Issues.
 

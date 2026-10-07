@@ -1,6 +1,6 @@
 # Design: rcen.dev
 
-docs/wireframe.pdf is the layout reference and this file covers stack, tokens and behavior.
+This file is the source of truth for stack, tokens and behavior. Images and PDFs in docs/ are layout references. docs/wireframe.pdf still shows Projects as an accordion on desktop; section 4 supersedes it.
 
 ## 1. Decisions
 
@@ -10,8 +10,8 @@ The original plan described a single-page landing. The wireframes replace it.
 |---|---|
 | Single page with anchor sections | Multi-page: `/`, `/experience`, `/projects`, `/resume`, `/about` |
 | Hero with positioning line and CTAs | Home is name, nav and icons only |
-| Featured cards plus "More projects" | One uniform accordion list, all projects |
-| `/projects/[slug]` case study pages | None. Projects expand in place |
+| Featured cards plus "More projects" | All projects in one list: split view (list plus detail panel) on desktop, accordion on mobile |
+| `/projects/[slug]` case study pages | None. Details open in the detail panel on desktop and expand in place on mobile |
 | Skills and Contact sections | Omitted. Contact is the footer icons |
 | About section on the landing page | Its own `/about` page. Content not decided yet |
 | Plain color fade on hover | Diagonal color wash on every hover |
@@ -27,7 +27,7 @@ Sitemap: `/`, `/experience`, `/projects`, `/resume`, `/about`, `/resume.pdf`, `/
 
 | Tool | Role in this site |
 |---|---|
-| **Astro** | Site framework. Builds every page to static HTML at build time. One `.astro` file per route: `index`, `experience`, `projects`, `resume`, `about`, `404`. About is a plain Markdown-driven page, so its text can be edited without touching layout code. A shared `BaseLayout` holds the sticky header, footer icons, fonts and meta tags. Ships zero JavaScript unless a component opts in, and nothing here needs to (the accordion is native HTML). |
+| **Astro** | Site framework. Builds every page to static HTML at build time. One `.astro` file per route: `index`, `experience`, `projects`, `resume`, `about`, `404`. About is a plain Markdown-driven page, so its text can be edited without touching layout code. A shared `BaseLayout` holds the sticky header, footer icons, fonts and meta tags. Ships zero JavaScript unless a component opts in. The exceptions are the Projects desktop selection island and the footer email script (section 4). The mobile accordion is native HTML. |
 | **Tailwind CSS** | All styling. Design tokens from section 3 go in the Tailwind theme (`bg`, `selected`, `ink`, `sub`, `panel`, `panel-2`, `divider`) so classes read `text-ink hover:text-selected`. Name the body text color `ink` in Tailwind: `text-base` is already Tailwind's default font-size class and would collide. The wash animation lives in one small custom CSS file because it uses gradients and masks Tailwind doesn't cover cleanly. Unused classes are stripped at build. |
 | **Astro Content Collections + Zod** | Projects and experience entries live as Markdown files in `src/content/projects/` and `src/content/experience/`, one file per entry. Frontmatter holds structured fields (title, dates, summary, metric, tags, GitHub URL, image, display order). The body holds the expanded text. A Zod schema checks every file at build, so a missing title or broken date fails the build instead of shipping. The Projects and Experience pages loop over these collections. Adding a project means adding one file. |
 | **@astrojs/mdx** | Optional now. It was in the plan for case study pages, which were cut. Plain Markdown covers the expanded project text. Add MDX later only if an expanded project needs an embedded component such as a chart. |
@@ -72,8 +72,46 @@ Font: Newsreader (serif), Georgia fallback.
 
 ## 4. Implementation notes
 
-**Accordion (Projects)**
-Use native `<details name="projects">` elements. Sharing a `name` gives one-open-at-a-time with zero JavaScript in current Chrome, Safari and Firefox. Older browsers allow several open at once, which is an acceptable fallback. Giving each project an `id` allows links like `/projects#fracfeedextractor` to open a specific project. That part needs a small script.
+**Projects: desktop split view (viewport ≥ 900px)**
+docs/Projects, desktop split view.pdf is the visual reference.
+
+Layout
+- The page is locked to the viewport: root height `100dvh`, `overflow: hidden`. The page never scrolls. Only the two panels scroll.
+- Header and footer stay at their natural height (`flex-shrink: 0`). Main fills the remaining height (`flex: 1; min-height: 0`).
+- Content container: max-width 1120px, centered, 32px horizontal padding, 8px vertical padding.
+- Two panels side by side with a 24px gap. Both stretch to the same height and line up top and bottom.
+- Left list panel: `flex: 0 1 360px`. Right detail panel: `flex: 1 1 560px; min-width: 0`.
+- Both panels: background `panel` `#E8E7E2`, radius 10px, `overflow-y: auto`, `overflow-x: hidden`, `scrollbar-gutter: stable`, thin scrollbar (`#B9B8B3` thumb, transparent track).
+
+List panel
+- 8px padding. One row per project, ordered by the display order field.
+- Each row is a real `<button>` with `aria-current` on the selected row. Minimum height 44px, padding 14px 16px, radius 6px.
+- Row content: title (18px, 600) and dates (13px, `sub` `#64635F`) on one line that wraps when narrow, so the date drops below the title. Summary below (14px, `sub`, line-height 1.4).
+- Selected row: background `panel-2` `#DEDDD8` and title in `selected` `#1C653A`. Unselected rows use the `.wash` hover on the title.
+- The first project is selected on load.
+
+Detail panel
+- 28px 32px padding, flex column, 16px gap. All children `flex-shrink: 0`.
+- Same section order for every project, skipping empty fields: title (32px, 600) with dates right-aligned (15px, `sub`) and wrapping when narrow, image slot (220px tall, `panel-2`, only when the project has an image), description (17px, line-height 1.6, max-width 68ch), role bullets, metric line (16px, 600), tag pills (13px, `sub` on `bg` `#F7F6F1`, fully rounded, wrapping), "View on GitHub" link with external-link arrow.
+- The panel keeps a fixed shape. It never resizes to fit content.
+- `tabindex="0"` and `aria-label="Project details"` so keyboard users can scroll it.
+- Reset `scrollTop` to 0 when the selected project changes.
+
+Overflow rules
+- No horizontal scrolling anywhere on the page.
+- No text clipped outside a panel. Text wraps at word boundaries (`overflow-wrap: break-word`). Titles may break mid-word only as a last resort (`overflow-wrap: anywhere`).
+- Fit content first. Vertical scrolling inside a panel is the fallback. Never shrink font size to make content fit.
+- Content guideline per project: one description paragraph, two bullets, one metric, about eight tags or fewer.
+
+Behavior
+- Selection needs a small island script (vanilla JS or an Astro `client:load` component). Keep it small: click to select, update `aria-current`, swap the detail content and reset its scroll.
+- Render every project's detail block in the static HTML and toggle visibility, so content works without JavaScript and stays indexable. Without JS, show all detail blocks stacked.
+- Deep links: `/projects#<slug>` selects that project on load. Update the hash on selection with `history.replaceState` so it does not add history entries.
+
+**Projects: mobile (< 900px)**
+- Unchanged: the native `<details name="projects">` accordion from the wireframe, with normal page scrolling. Sharing a `name` gives one-open-at-a-time with zero JavaScript in current Chrome, Safari and Firefox. Older browsers allow several open at once, which is an acceptable fallback.
+- Giving each project an `id` allows links like `/projects#fracfeedextractor` to open a specific project. That part needs a small script.
+- The viewport lock does not apply below 900px.
 
 **Diagonal wash animation**
 Every hover color change uses a diagonal wash: green `#1C653A` sweeps over ink `#171717` at a 135° angle, bottom-right to top-left. Unhovering reverses the sweep. Applies to nav items, Back, footer icons, project titles and chevrons and the Download PDF fill.
