@@ -21,7 +21,6 @@ const projects = defineCollection({
         // Required: every project has these
         title: z.string().min(1),
         start: month,
-        end: month, // equal to start for a single-month project
         context: z.enum(['capstone', 'course', 'hackathon', 'personal']),
         teamSize: z.number().int().positive(), // 1 means solo
         summary: z.string().min(1),
@@ -30,6 +29,7 @@ const projects = defineCollection({
         order: z.number().int(),
 
         // Optional
+        end: month.optional(), // equal to start for a single-month project, absent means present
         contextDetail: z.string().optional(), // course number or event name and length
         teamNote: z.string().optional(), // nuance the number cannot carry
         role: z.string().optional(),
