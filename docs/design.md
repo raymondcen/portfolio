@@ -29,7 +29,7 @@ Sitemap: `/`, `/experience`, `/projects`, `/resume`, `/about`, `/resume.pdf`, `/
 |---|---|
 | **Astro** | Site framework. Builds every page to static HTML at build time. One `.astro` file per route: `index`, `experience`, `projects`, `resume`, `about`, `404`. About is a plain Markdown-driven page, so its text can be edited without touching layout code. A shared `BaseLayout` holds the sticky header, footer icons, fonts and meta tags. Ships zero JavaScript unless a component opts in. The exceptions are the Projects desktop selection island and the footer email script (section 4). The mobile accordion is native HTML. |
 | **Tailwind CSS** | All styling. Design tokens from section 3 go in the Tailwind theme (`bg`, `selected`, `ink`, `sub`, `panel`, `panel-2`, `divider`) so classes read `text-ink hover:text-selected`. Name the body text color `ink` in Tailwind: `text-base` is already Tailwind's default font-size class and would collide. The wash animation lives in one small custom CSS file because it uses gradients and masks Tailwind doesn't cover cleanly. Unused classes are stripped at build. |
-| **Astro Content Collections + Zod** | Projects and experience entries live as Markdown files in `src/content/projects/` and `src/content/experience/`, one file per entry. Schemas live in `src/content.config.ts`; each collection uses the glob loader on `**/*.md`, and the file name is the entry id used for deep links (`/projects#fracfeedextractor`). Projects frontmatter: `title`, `start`, `end` (equal to `start` for a single-month project, shown as one date), `summary`, `metric` (optional), `tags` (at least one), `github` (optional URL), `image` (optional `{ src, alt }`, alt required whenever an image exists), `order`. Experience frontmatter: `title` (the role), `organization`, `location`, `start`, `end` (optional, absent means present), `tags` (at least one), `order`. Experience omits summary, metric, GitHub and image and adds organization and location. Dates are quoted `"YYYY-MM"` strings, not Date objects: a parsed Date is UTC midnight and renders as the previous day in Pacific time, and YYYY-MM strings sort correctly as plain strings. An entry whose end is before its start fails. The body holds the expanded text: for projects one description paragraph followed by the role bullets, for experience the bullets. A Zod schema checks every file at build, so a missing title or broken date fails the build instead of shipping. The Projects and Experience pages loop over these collections. Adding a project means adding one file. |
+| **Astro Content Collections + Zod** | Projects and experience entries live as Markdown files in `src/content/projects/` and `src/content/experience/`, one file per entry. Schemas live in `src/content.config.ts`; each collection uses the glob loader on `**/*.md`, and the file name is the entry id used for deep links (`/projects#fracfeedextractor`). Projects frontmatter, required: `title`, `start`, `context` (one of `capstone`, `course`, `hackathon`, `personal`), `teamSize` (positive integer, 1 means solo), `summary`, `tags` (at least one), `status` (one of `complete`, `archived`, `in-progress`) and `order`. Optional: `end` (equal to `start` for a single-month project and shown as one date; absent means present), `contextDetail` (course number or event name and length), `teamNote` (nuance the number cannot carry), `role`, `metric` (prefix "Team result:" when it is not solely mine), `github`, `devpost`, `live` and `video` (URLs) and `image` (`{ src, alt }`, alt required whenever an image exists). Experience frontmatter: `title` (the role), `organization`, `location`, `start`, `end` (optional, absent means present), `tags` (at least one), `order`. Experience omits summary, metric, GitHub and image and adds organization and location. Dates are quoted `"YYYY-MM"` strings, not Date objects: a parsed Date is UTC midnight and renders as the previous day in Pacific time, and YYYY-MM strings sort correctly as plain strings. An entry whose end is before its start fails. The body holds the expanded text: for projects one description paragraph followed by the role bullets, for experience the bullets. A Zod schema checks every file at build, so a missing title or broken date fails the build instead of shipping. The Projects and Experience pages loop over these collections. Adding a project means adding one file. |
 | **@astrojs/mdx** | Optional now. It was in the plan for case study pages, which were cut. Plain Markdown covers the expanded project text. Add MDX later only if an expanded project needs an embedded component such as a chart. |
 | **astro-icon** | Inlines SVG icons at build time: LinkedIn, mail, GitHub, Back chevron, accordion chevron and external-link arrow. No icon font and no runtime cost. Plain inline SVG is an acceptable substitute that avoids the dependency. The 嘉安 mark does not use astro-icon: `BaseLayout` imports `src/assets/an.svg?raw` and inlines it. |
 | **@astrojs/sitemap** | Generates `sitemap.xml` at build from the routes. Paired with a static `robots.txt` in `public/`. Until launch, `BaseLayout` emits `<meta name="robots" content="noindex">` on every page while `SITE_LIVE` is false. `/404` passes `noindex` so it stays out of the index after launch. |
@@ -114,32 +114,32 @@ Behavior
 - The viewport lock does not apply below 900px.
 
 **Diagonal wash animation**
-Every hover color change uses a diagonal wash: green `#1C653A` sweeps over ink `#171717` at a 135° angle, bottom-right to top-left. Unhovering reverses the sweep. Applies to nav items, Back, footer icons, project titles and chevrons and the Download PDF fill.
+Every hover color change uses a diagonal wash: green `#1C653A` sweeps over ink `#171717` at a 45° angle, bottom-left to top-right. Unhovering reverses the sweep. Applies to nav items, Back, footer icons, project titles and chevrons and the Download PDF fill.
 
-How it works: a 135° linear gradient with a hard color stop (green on one half, ink on the other) sits on an oversized background. Hover slides `background-position` so the green half crosses the element.
+How it works: a 45° linear gradient with a hard color stop (green on the bottom-left half, ink on the top-right half) sits on an oversized background. At rest `background-position: 100% 0` shows the ink corner. Hover slides it to `0 100%` so the green half crosses the element from the bottom left.
 
 ```css
 .wash {
-  background-image: linear-gradient(135deg, #1C653A 50%, #171717 50%);
+  background-image: linear-gradient(45deg, #1C653A 50%, #171717 50%);
   background-size: 300% 300%;
-  background-position: 100% 100%;           /* ink showing */
+  background-position: 100% 0;                /* ink showing */
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
   transition: background-position 300ms ease-out;
 }
 @media (hover: hover) {
-  .wash:hover { background-position: 0 0; } /* green swept in */
+  .wash:hover { background-position: 0 100%; } /* green swept in */
 }
-.wash:focus-visible { background-position: 0 0; }
+.wash:focus-visible { background-position: 0 100%; }
 @media (prefers-reduced-motion: reduce) {
   .wash { transition: none; }
 }
 ```
 
 - Text (nav, Back, project titles): the `.wash` pattern above.
-- Download PDF button: same gradient on the button fill without `background-clip: text`; label stays `#F7F6F1`.
-- Footer icons and chevrons: SVG strokes can't use `background-clip`. Put the gradient on a wrapper and use the icon as a CSS `mask-image`.
+- Download PDF button: same gradient and direction (bottom left to top right) on the button fill without `background-clip: text`; label stays `#F7F6F1`.
+- Footer icons and chevrons: SVG strokes can't use `background-clip`. Put the gradient on a wrapper and use the icon as a CSS `mask-image`. Same direction: green enters from the bottom left.
 - Back chevron, interim: it turns `selected` instantly on hover or keyboard focus of the Back link (`group-hover:text-selected group-focus-visible:text-selected`), with no sweep. Replace it with the mask-image wash above.
 - Wrap hover in `@media (hover: hover)` so phone taps don't leave items stuck green.
 - Reduced motion: no sweep, instant color change.
@@ -181,7 +181,7 @@ One row on every page, so "Raymond Cen" sits at the same y everywhere. Sizes are
 Self-host Newsreader (Fontsource package), use `font-display: swap` and preload the regular weight. Only weights 400, 500 and 600 are used.
 
 **Home page SEO**
-Home shows no positioning text, so the `<title>`, meta description and Open Graph tags must carry it. Home title: "Raymond Cen | CS and Data Science, Oregon State". Other pages use "<Page> | Raymond Cen" (404: "Page not found | Raymond Cen"). Meta descriptions are still `[bracketed]` placeholders.
+Home shows no positioning text. Home title: "Raymond Cen". The home meta description and Open Graph description must carry the positioning (CS and Data Science, Oregon State). Other pages use "<Page> | Raymond Cen" (404: "Page not found | Raymond Cen"). Meta descriptions are still `[bracketed]` placeholders, including home's `[Home meta description]`.
 
 **Nav state**
 Mark the current page with `aria-current="page"`.
