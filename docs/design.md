@@ -117,7 +117,7 @@ Newsreader has no CJK glyphs. Use an inline SVG of the characters, not a CJK web
 
 Favicon (`public/favicon.svg`, `favicon-32.png`, `apple-touch-icon.png`): 嘉安 side by side on the `#F7F6F1` rounded square, viewBox `0 0 1127 1127`. Known trade-off: 嘉 is illegible at 16px.
 
-The mark is decorative: not a link, not focusable and not selectable (`select-none`). The SVG is `aria-hidden` since the name sits next to it in the header. It shows on `/` only; every other page shows Back in the same slot.
+The mark is decorative: not a link, not focusable and not selectable (`select-none`). The SVG is `aria-hidden` since the name sits next to it in the header. It shows on `/` only; every other page shows Back in the same slot. Hovering the mark shows `"blessed peace"`, quotation marks included, through the native `title` tooltip. Keyboard and touch users don't see it, which is acceptable for decoration.
 
 **Header**
 One row on every page, so "Raymond Cen" sits at the same y everywhere. Sizes are CSS variables in `:root` in `src/styles/global.css`, used through Tailwind's `(--var)` shorthand:

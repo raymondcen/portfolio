@@ -57,7 +57,7 @@ const socials = [
   <body class="flex min-h-dvh flex-col bg-bg font-serif text-ink">
     <header class="sticky top-0 z-10 grid grid-cols-[1fr_auto_1fr] grid-rows-[var(--header-row)] items-center bg-bg px-6 py-(--header-pad) sm:px-8">
       {isHome ? (
-        <span class="justify-self-start select-none text-selected" set:html={an} />
+        <span title='"blessed peace"' class="justify-self-start select-none text-selected" set:html={an} />
       ) : (
         <a href="/" class={`wash flex items-center gap-1 justify-self-start text-2xl leading-none ${focusRing}`}>
           {/* Negative margins trim the empty side padding in the chevron's 24-unit viewBox */}
