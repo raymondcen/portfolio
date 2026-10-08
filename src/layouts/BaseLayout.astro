@@ -94,5 +94,18 @@ const socials = [
         })}
       </ul>
     </footer>
+
+    <script is:inline>
+      // Constant wash speed: give each .wash its width + height so its duration scales with the distance swept.
+      // Observing keeps it right through resizes, wrapping, the late web font and hidden blocks being shown.
+      {
+        const washObserver = new ResizeObserver((entries) => {
+          for (const { target, borderBoxSize: [box] } of entries) {
+            target.style.setProperty('--wash-size', Math.round(box.inlineSize + box.blockSize));
+          }
+        });
+        for (const el of document.querySelectorAll('.wash')) washObserver.observe(el);
+      }
+    </script>
   </body>
 </html>

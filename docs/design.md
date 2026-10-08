@@ -118,17 +118,20 @@ Behavior
 **Diagonal wash animation**
 Every hover color change uses a diagonal wash: green `#1C653A` sweeps over ink `#171717` at a 45° angle, bottom-left to top-right. Unhovering reverses the sweep. Applies to nav items, Back, footer icons, project titles and chevrons and the Download PDF fill.
 
-How it works: a 45° linear gradient with a hard color stop (green on the bottom-left half, ink on the top-right half) sits on an oversized background. At rest `background-position: 100% 0` shows the ink corner. Hover slides it to `0 100%` so the green half crosses the element from the bottom left.
+How it works: a 45° linear gradient with a hard color stop (green on the bottom-left half, ink on the top-right half) sits on a background twice the element's size. At rest `background-position: 100% 0` shows ink, with the edge on the bottom-left corner. Hover slides it to `0 100%` so the green half crosses the element and the edge ends on the top-right corner.
+
+Constant speed: the edge moves at the same pixel speed on every element, so short titles finish sooner than long ones. Duration is `--wash-size` (the element's width plus height in px) times `--wash-ms-per-px` (2ms, in `:root` in global.css, the one knob for wash speed), with `linear` timing. A small inline script in BaseLayout sets `--wash-size` on every `.wash` with a ResizeObserver, so it stays right through resizes, wrapping, font loading and hidden blocks being shown. Without JS it falls back to 240 (480ms). The mobile chevron has a fixed 24px box, so its size is a constant 48 in CSS.
 
 ```css
 .wash {
   background-image: linear-gradient(45deg, #1C653A 50%, #171717 50%);
-  background-size: 300% 300%;
+  background-size: 200% 200%;
   background-position: 100% 0;                /* ink showing */
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  transition: background-position 600ms ease-out;
+  --wash-duration: calc(var(--wash-size, 240) * var(--wash-ms-per-px));
+  transition: background-position var(--wash-duration) linear;
 }
 @media (hover: hover) {
   .wash:hover { background-position: 0 100%; } /* green swept in */
