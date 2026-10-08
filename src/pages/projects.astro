@@ -1,7 +1,166 @@
 ---
+import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import ProjectDetail from '../components/ProjectDetail.astro';
+
+const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+
+// "YYYY-MM" strings split by hand: no Date object, so no timezone shift
+const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const month = (ym: string) => {
+  const [year, m] = ym.split('-');
+  return `${months[Number(m) - 1]} ${year}`;
+};
+const dates = ({ start, end }: { start: string; end?: string }) =>
+  end === start ? month(start) : `${month(start)} – ${end ? month(end) : 'Present'}`;
+
+const focusRing = 'focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-selected';
 ---
 
-<BaseLayout title="Projects | Raymond Cen" description="[Projects meta description]">
-  <p>Raymond Cen. Site in progress.</p>
+<BaseLayout title="Projects | Raymond Cen" description="[Projects meta description]" lockViewport>
+  <noscript>
+    <style>
+      /* Without JS: drop the viewport lock so the stacked detail blocks scroll with the page */
+      @media (min-width: 900px) {
+        body { height: auto !important; overflow: visible !important; }
+      }
+    </style>
+  </noscript>
+
+  <h1 class="sr-only">Projects</h1>
+
+  {/* Desktop: split view */}
+  <div class="mx-auto hidden h-full max-w-[1120px] gap-6 px-8 py-2 min-[900px]:flex">
+    <ul class="panel flex-[0_1_360px] p-2">
+      {projects.map((project, i) => (
+        <li>
+          <button
+            type="button"
+            data-project-button
+            data-slug={project.id}
+            aria-current={i === 0 ? 'true' : undefined}
+            class={`group flex min-h-11 w-full cursor-pointer flex-col rounded-md px-4 py-3.5 text-left aria-[current=true]:bg-panel-2 ${focusRing}`}
+          >
+            <span class="wash self-start text-lg font-semibold [overflow-wrap:anywhere]">{project.data.title}</span>
+            <span class="text-[13px] text-sub italic">{dates(project.data)}</span>
+            <span class="text-sm leading-[1.4] text-sub">{project.data.summary}</span>
+          </button>
+        </li>
+      ))}
+    </ul>
+
+    <section id="project-detail" tabindex="0" aria-label="Project details" class={`panel flex-[1_1_560px] min-w-0 ${focusRing}`}>
+      {projects.map((project) => (
+        <article data-project-detail data-slug={project.id} class="flex flex-col gap-4 px-8 py-7">
+          <div class="shrink-0">
+            <h2 class="text-[32px] leading-tight font-semibold [overflow-wrap:anywhere]">{project.data.title}</h2>
+            <p class="text-[15px] text-sub italic">{dates(project.data)}</p>
+          </div>
+          <ProjectDetail project={project} layout="desktop" />
+        </article>
+      ))}
+    </section>
+  </div>
+
+  {/* Mobile: native accordion */}
+  <div class="px-4 pb-4 min-[900px]:hidden">
+    <div class="rounded-[10px] bg-panel px-4">
+      {projects.map((project, i) => (
+        <details name="projects" id={project.id} open={i === 0} class="border-b border-divider last:border-b-0">
+          <summary class={`group flex cursor-pointer list-none items-start gap-3 rounded-md py-4 ${focusRing}`}>
+            <span class="flex min-w-0 flex-1 flex-col">
+              <span class="wash self-start text-lg font-semibold [overflow-wrap:anywhere]">{project.data.title}</span>
+              <span class="text-[13px] text-sub italic">{dates(project.data)}</span>
+              <span class="text-sm leading-[1.4] text-sub">{project.data.summary}</span>
+            </span>
+            <span class="chevron" aria-hidden="true"></span>
+          </summary>
+          <div class="flex flex-col gap-4 pb-6">
+            <ProjectDetail project={project} layout="mobile" />
+          </div>
+        </details>
+      ))}
+    </div>
+  </div>
+
+  <script is:inline>
+    const buttons = document.querySelectorAll('[data-project-button]');
+    const blocks = document.querySelectorAll('[data-project-detail]');
+    const panel = document.getElementById('project-detail');
+    const slugs = [...buttons].map((b) => b.dataset.slug);
+
+    function select(slug) {
+      for (const b of buttons) b.setAttribute('aria-current', b.dataset.slug === slug);
+      for (const d of blocks) d.hidden = d.dataset.slug !== slug;
+      panel.scrollTop = 0;
+    }
+
+    const hash = decodeURIComponent(location.hash.slice(1));
+    const initial = slugs.includes(hash) ? hash : slugs[0];
+    select(initial);
+    document.getElementById(initial).open = true;
+
+    for (const b of buttons) {
+      b.addEventListener('click', () => {
+        select(b.dataset.slug);
+        history.replaceState(null, '', '#' + b.dataset.slug);
+      });
+    }
+  </script>
 </BaseLayout>
+
+<style>
+  .panel {
+    background: var(--color-panel);
+    border-radius: 10px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overflow-wrap: break-word;
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    scrollbar-color: #B9B8B3 transparent;
+  }
+
+  /* .wash paints text with a clipped gradient, so the selected title needs the gradient removed to show green */
+  [aria-current='true'] .wash {
+    background-image: none; /* not the shorthand: it would reset background-position and replay the sweep on deselect */
+    color: var(--color-selected);
+  }
+
+  /* Hovering anywhere on a row or summary sweeps its title and chevron */
+  @media (hover: hover) {
+    button:hover .wash,
+    summary:hover .wash,
+    summary:hover .chevron {
+      background-position: 0 100%;
+    }
+  }
+  button:focus-visible .wash,
+  summary:focus-visible .wash,
+  summary:focus-visible .chevron {
+    background-position: 0 100%;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  /* Chevron wash: the gradient fills the box and the icon is its mask, since SVG strokes can't use background-clip */
+  .chevron {
+    flex-shrink: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    margin-top: 0.125rem;
+    background-image: linear-gradient(45deg, var(--color-selected) 50%, var(--color-ink) 50%);
+    background-size: 300% 300%;
+    background-position: 100% 0;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") center / contain no-repeat;
+    transition: background-position 300ms ease-out, rotate 200ms ease-out;
+  }
+  details[open] .chevron {
+    rotate: 180deg;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .chevron { transition: none; }
+  }
+</style>

@@ -1,7 +1,7 @@
 ---
 title: Heart Disease Predictor
 start: "2025-06"
-end: "2025-09"
+end: "2025-07"
 context: personal
 teamSize: 1
 role: Solo

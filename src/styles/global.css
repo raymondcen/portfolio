@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "@fontsource/newsreader/400.css";
+@import "@fontsource/newsreader/400-italic.css";
 @import "@fontsource/newsreader/500.css";
 @import "@fontsource/newsreader/600.css";
 
@@ -21,6 +22,11 @@
   --header-pad: 1.75rem;
   --header-row: 3.5rem;
   --header-back: 3rem;
+}
+
+/* Anchors and keyboard focus land below the sticky header */
+html {
+  scroll-padding-top: calc(var(--header-row) + 2 * var(--header-pad));
 }
 
 .wash {

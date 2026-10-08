@@ -8,12 +8,13 @@ interface Props {
   title: string;
   description: string;
   noindex?: boolean;
+  lockViewport?: boolean; // at 900px and up, lock the page to the viewport so only inner panels scroll
 }
 
 // Flip to true at launch
 const SITE_LIVE = false;
 
-const { title, description, noindex = false } = Astro.props;
+const { title, description, noindex = false, lockViewport = false } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
 const isHome = Astro.url.pathname.replace(/\/+$/, '') === '';
 
@@ -54,8 +55,8 @@ const socials = [
 
     <link rel="preload" href={newsreader400} as="font" type="font/woff2" crossorigin />
   </head>
-  <body class="flex min-h-dvh flex-col bg-bg font-serif text-ink">
-    <header class="sticky top-0 z-10 grid grid-cols-[1fr_auto_1fr] grid-rows-[var(--header-row)] items-center bg-bg px-6 py-(--header-pad) sm:px-8">
+  <body class:list={['flex min-h-dvh flex-col bg-bg font-serif text-ink', lockViewport && 'min-[900px]:h-dvh min-[900px]:overflow-hidden']}>
+    <header class="sticky top-0 z-10 grid shrink-0 grid-cols-[1fr_auto_1fr] grid-rows-[var(--header-row)] items-center bg-bg px-6 py-(--header-pad) sm:px-8">
       {isHome ? (
         <span title='"blessed peace"' class="justify-self-start select-none text-selected" set:html={an} />
       ) : (
@@ -68,11 +69,11 @@ const socials = [
       <p class="text-3xl font-medium">Raymond Cen</p>
     </header>
 
-    <main class="flex-1">
+    <main class="min-h-0 flex-1">
       <slot />
     </main>
 
-    <footer class="sticky bottom-0 bg-bg py-8">
+    <footer class="sticky bottom-0 shrink-0 bg-bg py-4">
       <slot name="footer" />
       <ul class="flex justify-center gap-8">
         {socials.map(({ label, icon, href }) => {
