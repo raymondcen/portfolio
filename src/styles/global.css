@@ -36,7 +36,7 @@ html {
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  transition: background-position 300ms ease-out;
+  transition: background-position 600ms ease-out;
 }
 @media (hover: hover) {
   .wash:hover { background-position: 0 100%; } /* green swept in */

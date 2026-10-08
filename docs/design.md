@@ -88,7 +88,7 @@ List panel
 - Each row is a real `<button>` with `aria-current` on the selected row. Minimum height 44px, padding 14px 16px, radius 6px.
 - Row content: title (18px, 600) and dates (13px, `sub` `#64635F`) on one line that wraps when narrow, so the date drops below the title. Summary below (14px, `sub`, line-height 1.4).
 - Selected row: background `panel-2` `#DEDDD8` and title in `selected` `#1C653A`. Unselected rows use the `.wash` hover on the title.
-- With JS the `panel-2` background is one highlight behind the rows that slides and resizes to the newly selected row (300ms ease-out). It is placed instantly on load and on resize. Reduced motion: it moves instantly. Without JS each selected button keeps its own background.
+- With JS the `panel-2` background is one highlight behind the rows that slides and resizes to the newly selected row (600ms ease-out). It is placed instantly on load and on resize. Reduced motion: it moves instantly. Without JS each selected button keeps its own background.
 - The first project is selected on load.
 
 Detail panel
@@ -128,7 +128,7 @@ How it works: a 45° linear gradient with a hard color stop (green on the bottom
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  transition: background-position 300ms ease-out;
+  transition: background-position 600ms ease-out;
 }
 @media (hover: hover) {
   .wash:hover { background-position: 0 100%; } /* green swept in */
