@@ -107,11 +107,11 @@ Overflow rules
 Behavior
 - Selection needs a small island script (vanilla JS or an Astro `client:load` component). Keep it small: click to select, update `aria-current`, swap the detail content and reset its scroll.
 - Render every project's detail block in the static HTML and toggle visibility, so content works without JavaScript and stays indexable. Without JS, show all detail blocks stacked.
-- Deep links: `/projects#<slug>` selects that project on load. Update the hash on selection with `history.replaceState` so it does not add history entries.
+- No deep links: the URL stays `/projects` with no hash. The first project is selected on every load.
 
 **Projects: mobile (< 900px)**
 - Unchanged: the native `<details name="projects">` accordion from the wireframe, with normal page scrolling. Sharing a `name` gives one-open-at-a-time with zero JavaScript in current Chrome, Safari and Firefox. Older browsers allow several open at once, which is an acceptable fallback.
-- Giving each project an `id` allows links like `/projects#fracfeedextractor` to open a specific project. That part needs a small script.
+- The first project is open on load. No hash links to individual projects.
 - The viewport lock does not apply below 900px.
 
 **Diagonal wash animation**

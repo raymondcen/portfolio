@@ -10,7 +10,7 @@ const tags = z.array(z.string().min(1)).min(1);
 const endNotBeforeStart = (d: { start: string; end?: string }) => !d.end || d.end >= d.start;
 const endError = { message: 'end must not be before start', path: ['end'] };
 
-// The entry id (slug) is the file name, for example fracfeedextractor.md -> /projects#fracfeedextractor.
+// The entry id (slug) is the file name, for example fracfeedextractor.md -> fracfeedextractor.
 // There is no slug field in frontmatter, so the two cannot drift apart.
 
 const projects = defineCollection({

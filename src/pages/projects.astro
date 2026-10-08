@@ -67,7 +67,7 @@ const focusRing = 'focus-visible:outline-2 focus-visible:outline-offset-4 focus-
   <div class="px-4 pb-4 min-[900px]:hidden">
     <div class="rounded-[10px] bg-panel px-4">
       {projects.map((project, i) => (
-        <details name="projects" id={project.id} open={i === 0} class="border-b border-divider last:border-b-0">
+        <details name="projects" open={i === 0} class="border-b border-divider last:border-b-0">
           <summary class={`group flex cursor-pointer list-none items-start gap-3 rounded-md py-4 ${focusRing}`}>
             <span class="flex min-w-0 flex-1 flex-col">
               <span class="wash self-start text-lg font-semibold [overflow-wrap:anywhere]">{project.data.title}</span>
@@ -88,7 +88,6 @@ const focusRing = 'focus-visible:outline-2 focus-visible:outline-offset-4 focus-
     const buttons = document.querySelectorAll('[data-project-button]');
     const blocks = document.querySelectorAll('[data-project-detail]');
     const panel = document.getElementById('project-detail');
-    const slugs = [...buttons].map((b) => b.dataset.slug);
     const list = document.querySelector('[data-project-list]');
     const highlight = list.querySelector('[data-highlight]');
 
@@ -106,10 +105,7 @@ const focusRing = 'focus-visible:outline-2 focus-visible:outline-offset-4 focus-
       place();
     }
 
-    const hash = decodeURIComponent(location.hash.slice(1));
-    const initial = slugs.includes(hash) ? hash : slugs[0];
-    select(initial);
-    document.getElementById(initial).open = true;
+    select(buttons[0].dataset.slug);
 
     // Hand the selected background from the buttons to the highlight, then animate only from the next frame on
     list.dataset.ready = '';
@@ -127,10 +123,7 @@ const focusRing = 'focus-visible:outline-2 focus-visible:outline-offset-4 focus-
     for (const el of [list, ...buttons]) ro.observe(el);
 
     for (const b of buttons) {
-      b.addEventListener('click', () => {
-        select(b.dataset.slug);
-        history.replaceState(null, '', '#' + b.dataset.slug);
-      });
+      b.addEventListener('click', () => select(b.dataset.slug));
     }
   </script>
 </BaseLayout>
