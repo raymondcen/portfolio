@@ -31,7 +31,8 @@ const focusRing = 'focus-visible:outline-2 focus-visible:outline-offset-4 focus-
 
   {/* Desktop: split view */}
   <div class="mx-auto hidden h-full max-w-[1120px] gap-6 px-8 py-2 min-[900px]:flex">
-    <ul class="panel flex-[0_1_360px] p-2">
+    <ul data-project-list class="panel relative flex-[0_1_360px] p-2">
+      <li data-highlight aria-hidden="true" class="pointer-events-none absolute inset-x-2 top-0 rounded-md bg-panel-2"></li>
       {projects.map((project, i) => (
         <li>
           <button
@@ -39,7 +40,7 @@ const focusRing = 'focus-visible:outline-2 focus-visible:outline-offset-4 focus-
             data-project-button
             data-slug={project.id}
             aria-current={i === 0 ? 'true' : undefined}
-            class={`group flex min-h-11 w-full cursor-pointer flex-col rounded-md px-4 py-3.5 text-left aria-[current=true]:bg-panel-2 ${focusRing}`}
+            class={`group relative z-1 flex min-h-11 w-full cursor-pointer flex-col rounded-md px-4 py-3.5 text-left aria-[current=true]:bg-panel-2 ${focusRing}`}
           >
             <span class="wash self-start text-lg font-semibold [overflow-wrap:anywhere]">{project.data.title}</span>
             <span class="text-[13px] text-sub italic">{dates(project.data)}</span>
@@ -88,17 +89,42 @@ const focusRing = 'focus-visible:outline-2 focus-visible:outline-offset-4 focus-
     const blocks = document.querySelectorAll('[data-project-detail]');
     const panel = document.getElementById('project-detail');
     const slugs = [...buttons].map((b) => b.dataset.slug);
+    const list = document.querySelector('[data-project-list]');
+    const highlight = list.querySelector('[data-highlight]');
+
+    // Match the selected row: rows differ in height because summaries wrap differently
+    function place() {
+      const b = list.querySelector('[aria-current="true"]');
+      highlight.style.transform = `translateY(${b.offsetTop}px)`;
+      highlight.style.height = `${b.offsetHeight}px`;
+    }
 
     function select(slug) {
       for (const b of buttons) b.setAttribute('aria-current', b.dataset.slug === slug);
       for (const d of blocks) d.hidden = d.dataset.slug !== slug;
       panel.scrollTop = 0;
+      place();
     }
 
     const hash = decodeURIComponent(location.hash.slice(1));
     const initial = slugs.includes(hash) ? hash : slugs[0];
     select(initial);
     document.getElementById(initial).open = true;
+
+    // Hand the selected background from the buttons to the highlight, then animate only from the next frame on
+    list.dataset.ready = '';
+    highlight.offsetHeight; // flush so the initial placement never transitions
+    requestAnimationFrame(() => (list.dataset.animate = ''));
+
+    // Resize, the 900px breakpoint and the late Newsreader font all change row geometry: realign without animating.
+    // Rows are observed too, since the list's own box doesn't change when only row heights do.
+    const ro = new ResizeObserver(() => {
+      highlight.style.transition = 'none';
+      place();
+      highlight.offsetHeight;
+      highlight.style.transition = '';
+    });
+    for (const el of [list, ...buttons]) ro.observe(el);
 
     for (const b of buttons) {
       b.addEventListener('click', () => {
@@ -119,6 +145,23 @@ const focusRing = 'focus-visible:outline-2 focus-visible:outline-offset-4 focus-
     scrollbar-gutter: stable;
     scrollbar-width: thin;
     scrollbar-color: #B9B8B3 transparent;
+  }
+
+  /* Sliding selected highlight. Hidden until the script places it; buttons keep their own background without JS */
+  [data-highlight] {
+    display: none;
+  }
+  [data-ready] [data-highlight] {
+    display: block;
+  }
+  [data-ready] [aria-current='true'] {
+    background: none;
+  }
+  [data-animate] [data-highlight] {
+    transition: transform 300ms ease-out, height 300ms ease-out;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    [data-animate] [data-highlight] { transition: none; }
   }
 
   /* .wash paints text with a clipped gradient, so the selected title needs the gradient removed to show green */
