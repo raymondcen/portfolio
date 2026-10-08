@@ -1,17 +1,27 @@
 ---
 // Shared detail content for the desktop panel and the mobile accordion.
 // Title and dates live in each layout, since they sit in different places.
-import { Image } from 'astro:assets';
+import { Image, getImage } from 'astro:assets';
 import { Icon } from 'astro-icon/components';
 import { render, type CollectionEntry } from 'astro:content';
 
 interface Props {
   project: CollectionEntry<'projects'>;
+  layout: 'desktop' | 'mobile'; // rendered once per layout, so popover ids need a suffix
 }
 
-const { project } = Astro.props;
+const { project, layout } = Astro.props;
+const popoverId = `${project.id}-image-${layout}`;
 const { image, metric, tags, github, devpost, video, live } = project.data;
 const { Content } = await render(project);
+
+// Same options as the inline <Image>, so this resolves to the thumbnail the page already loaded
+const thumb = image && (await getImage({ src: image.src, height: 440 }));
+// The enlarged image's final size, set before it loads so the popover never collapses to the close button
+const enlarged = image && {
+  width: Math.min(image.src.width, 1600),
+  style: `width: min(90vw, ${Math.min(image.src.width, 1600)}px, calc(90dvh * ${image.src.width / image.src.height})); background-image: url(${thumb!.src});`,
+};
 
 const links = [
   { label: 'View on GitHub', href: github },
@@ -24,9 +34,32 @@ const focusRing = 'rounded-sm focus-visible:outline-2 focus-visible:outline-offs
 ---
 
 {image && (
-  <div class="h-[220px] shrink-0 overflow-hidden rounded-md bg-panel-2">
-    {/* contain, not cover: architecture diagrams must not be cropped */}
-    <Image src={image.src} alt={image.alt} height={440} class="size-full object-contain" />
+  <div class="relative w-fit max-w-full shrink-0">
+    {/* Natural aspect ratio, no box: the wrapper shrinks to the image so the button sits on its corner */}
+    <img src={thumb!.src} {...thumb!.attributes} alt={image.alt} class="block h-auto max-h-[220px] w-auto max-w-full rounded-md" />
+    <button
+      type="button"
+      popovertarget={popoverId}
+      aria-label="Enlarge image"
+      class={`group absolute top-2 right-2 flex size-8 cursor-pointer items-center justify-center rounded-md bg-bg/85 ${focusRing}`}
+    >
+      <Icon name="lucide:maximize-2" class="size-4 text-ink group-hover:text-selected group-focus-visible:text-selected" aria-hidden="true" />
+    </button>
+    {/* Native popover: opens without JS, closes on Esc or a click outside */}
+    <div id={popoverId} popover class="m-auto overflow-visible border-0 bg-transparent p-0 backdrop:bg-ink/70">
+      {/* The thumbnail shows as a stretched background until the full image loads */}
+      <Image src={image.src} alt={image.alt} width={enlarged!.width} loading="lazy" style={enlarged!.style} class="block h-auto rounded-md bg-contain bg-no-repeat" />
+      <button
+        type="button"
+        popovertarget={popoverId}
+        popovertargetaction="hide"
+        aria-label="Close enlarged image"
+        autofocus
+        class={`group absolute top-2 right-2 flex size-8 cursor-pointer items-center justify-center rounded-md bg-bg/85 ${focusRing}`}
+      >
+        <Icon name="lucide:x" class="size-4 text-ink group-hover:text-selected group-focus-visible:text-selected" aria-hidden="true" />
+      </button>
+    </div>
   </div>
 )}
 
