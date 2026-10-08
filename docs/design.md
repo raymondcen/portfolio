@@ -93,7 +93,7 @@ List panel
 
 Detail panel
 - 28px 32px padding, flex column, 16px gap. All children `flex-shrink: 0`.
-- Same section order for every project, skipping empty fields: title (32px, 600) with dates right-aligned (15px, `sub`) and wrapping when narrow, image slot (220px tall, `panel-2`, only when the project has an image), description (17px, line-height 1.6, max-width 68ch), role bullets, metric line (16px, 600), tag pills (13px, `sub` on `bg` `#F7F6F1`, fully rounded, wrapping), "View on GitHub" link with external-link arrow.
+- Same section order for every project, skipping empty fields: title (32px, 600; plays the wash sweep to `selected` `#1C653A` each time the project is shown and stays green, instant green under reduced motion) with dates right-aligned (15px, `sub`) and wrapping when narrow, image slot (220px tall, `panel-2`, only when the project has an image), description (17px, line-height 1.6, max-width 68ch), role bullets, metric line (16px, 600), tag pills (13px, `sub` on `bg` `#F7F6F1`, fully rounded, wrapping), "View on GitHub" link with external-link arrow.
 - The panel keeps a fixed shape. It never resizes to fit content.
 - `tabindex="0"` and `aria-label="Project details"` so keyboard users can scroll it.
 - Reset `scrollTop` to 0 when the selected project changes.
@@ -112,6 +112,7 @@ Behavior
 **Projects: mobile (< 900px)**
 - Unchanged: the native `<details name="projects">` accordion from the wireframe, with normal page scrolling. Sharing a `name` gives one-open-at-a-time with zero JavaScript in current Chrome, Safari and Firefox. Older browsers allow several open at once, which is an acceptable fallback.
 - The first project is open on load. No hash links to individual projects.
+- Open item: title and chevron in `selected` `#1C653A`, like the selected row on desktop. Closed items use the `.wash` hover.
 - The viewport lock does not apply below 900px.
 
 **Diagonal wash animation**

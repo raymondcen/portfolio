@@ -54,7 +54,7 @@ const focusRing = 'focus-visible:outline-2 focus-visible:outline-offset-4 focus-
       {projects.map((project) => (
         <article data-project-detail data-slug={project.id} class="flex flex-col gap-4 px-8 py-7">
           <div class="shrink-0">
-            <h2 class="text-[32px] leading-tight font-semibold [overflow-wrap:anywhere]">{project.data.title}</h2>
+            <h2 class="wash title-sweep w-fit text-[32px] leading-tight font-semibold [overflow-wrap:anywhere]">{project.data.title}</h2>
             <p class="text-[15px] text-sub italic">{dates(project.data)}</p>
           </div>
           <ProjectDetail project={project} layout="desktop" />
@@ -157,10 +157,28 @@ const focusRing = 'focus-visible:outline-2 focus-visible:outline-offset-4 focus-
     [data-animate] [data-highlight] { transition: none; }
   }
 
+  /* Detail title sweeps to green each time its block is shown: animations restart when an element leaves display: none */
+  .title-sweep {
+    animation: sweep 300ms ease-out both;
+  }
+  @keyframes sweep {
+    from { background-position: 100% 0; }
+    to { background-position: 0 100%; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .title-sweep { animation: none; background-position: 0 100%; }
+  }
+
   /* .wash paints text with a clipped gradient, so the selected title needs the gradient removed to show green */
-  [aria-current='true'] .wash {
+  [aria-current='true'] .wash,
+  details[open] > summary .wash {
     background-image: none; /* not the shorthand: it would reset background-position and replay the sweep on deselect */
     color: var(--color-selected);
+  }
+  /* The chevron's color is its masked background, so fill it solid instead */
+  details[open] > summary .chevron {
+    background-image: none;
+    background-color: var(--color-selected);
   }
 
   /* Hovering anywhere on a row or summary sweeps its title and chevron */
