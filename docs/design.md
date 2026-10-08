@@ -170,13 +170,15 @@ One row on every page, so "Raymond Cen" sits at the same y everywhere. Sizes are
 | Variable | Value | Use |
 |---|---|---|
 | `--header-pad` | `1.75rem` | Top and bottom padding (`py-(--header-pad)`) |
-| `--header-row` | `3.5rem` | Fixed grid row (`grid-rows-[var(--header-row)]`) and mark height (`h-(--header-row) w-auto`) |
-| `--header-back` | `3rem` | Back chevron (`size-(--header-back)`) |
+| `--header-row` | `3.5rem` | Fixed grid row (`grid-rows-[var(--header-row)]`) |
+| `--header-mark` | `2.625rem`, `--header-row` from `sm` | Mark height (`h-(--header-mark) w-auto`) |
+| `--header-back` | `2.25rem`, `3rem` from `sm` | Back chevron (`size-(--header-back)`) |
 
 - Header height is `2 x --header-pad + --header-row` (112px) on every page. The row is fixed, so the left slot never changes the header height.
 - Grid is `1fr auto 1fr`: left slot, name, empty right column. `items-center` centers the mark, Back and the name on one vertical center.
 - The left slot is `justify-self-start`, so the mark and the Back link share the left edge (`px-6`, `sm:px-8`).
-- The mark fills the row: 56px tall, about 116px wide. Same size on desktop and mobile.
+- Back text is `text-lg` below `sm` and `text-2xl` from `sm`. Below `sm` the link also has `pr-4` so it keeps a gap before the name.
+- From `sm` the mark fills the row: 56px tall, about 116px wide. Below `sm` it is 42px tall and has `pr-4`, matching Back.
 - Header and footer are sticky with a `bg` background. The mark stays inside the header, so content never scrolls under it.
 - Change a size by editing the variable, not the classes. Content taller than `--header-row` overflows the row instead of growing the header.
 - At 375px "Raymond Cen" fits on one line on every page.

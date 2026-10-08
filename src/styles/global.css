@@ -16,12 +16,15 @@
   --font-serif: "Newsreader", Georgia, "Times New Roman", serif;
 }
 
-/* Header: height = 2 x pad + row, on every page. The mark fills the row; Back and the name
-   center on it, so all three share one vertical center. */
+/* Header: height = 2 x pad + row, on every page. The mark fills the row from sm (smaller below);
+   the mark, Back and the name share one vertical center. */
 :root {
   --header-pad: 1.75rem;
   --header-row: 3.5rem;
-  --header-back: 3rem;
+  --header-mark: 2.625rem;
+  @media (width >= 40rem) { --header-mark: var(--header-row); }
+  --header-back: 2.25rem;
+  @media (width >= 40rem) { --header-back: 3rem; }
   /* Wash speed: time per pixel of element width + height. Lower is faster. */
   --wash-ms-per-px: 2ms;
 }

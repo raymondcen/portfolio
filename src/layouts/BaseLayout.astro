@@ -23,7 +23,7 @@ const an = anSvg
   .replace(/<metadata>[\s\S]*?<\/metadata>/, '')
   .replace(/ xmlns:c2pa="[^"]*"/, '')
   .replace(/fill="[^"]*"/, 'fill="currentColor"')
-  .replace('<svg', '<svg aria-hidden="true" class="block h-(--header-row) w-auto"');
+  .replace('<svg', '<svg aria-hidden="true" class="block h-(--header-mark) w-auto"');
 
 const focusRing = 'rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-selected';
 
@@ -58,9 +58,9 @@ const socials = [
   <body class:list={['flex min-h-dvh flex-col bg-bg font-serif text-ink', lockViewport && 'min-[900px]:h-dvh min-[900px]:overflow-hidden']}>
     <header class="sticky top-0 z-10 grid shrink-0 grid-cols-[1fr_auto_1fr] grid-rows-[var(--header-row)] items-center bg-bg px-6 py-(--header-pad) sm:px-8">
       {isHome ? (
-        <span title='"blessed peace"' class="justify-self-start select-none text-selected" set:html={an} />
+        <span title='"blessed peace"' class="justify-self-start select-none pr-4 text-selected sm:pr-0" set:html={an} />
       ) : (
-        <a href="/" class={`wash group flex items-center gap-1 justify-self-start text-2xl leading-none ${focusRing}`}>
+        <a href="/" class={`wash group flex items-center gap-1 justify-self-start pr-4 text-lg leading-none sm:pr-0 sm:text-2xl ${focusRing}`}>
           {/* Negative margins trim the empty side padding in the chevron's 24-unit viewBox */}
           <Icon name="lucide:chevron-left" class="-mx-2 size-(--header-back) text-ink group-hover:text-selected group-focus-visible:text-selected" aria-hidden="true" />
           Back
