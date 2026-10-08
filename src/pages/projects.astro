@@ -169,8 +169,13 @@ const focusRing = 'focus-visible:outline-2 focus-visible:outline-offset-4 focus-
     .title-sweep { animation: none; background-position: 0 100%; }
   }
 
-  /* .wash paints text with a clipped gradient, so the selected title needs the gradient removed to show green */
-  [aria-current='true'] .wash,
+  /* Selected row title holds the wash's green end, so deselecting runs the transition back:
+     ink sweeps in from the top right to the bottom left */
+  [aria-current='true'] .wash {
+    background-position: 0 100%;
+  }
+
+  /* .wash paints text with a clipped gradient, so the open title needs the gradient removed to show green */
   details[open] > summary .wash {
     background-image: none; /* not the shorthand: it would reset background-position and replay the sweep on deselect */
     color: var(--color-selected);

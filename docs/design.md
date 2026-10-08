@@ -88,6 +88,7 @@ List panel
 - Each row is a real `<button>` with `aria-current` on the selected row. Minimum height 44px, padding 14px 16px, radius 6px.
 - Row content: title (18px, 600) and dates (13px, `sub` `#64635F`) on one line that wraps when narrow, so the date drops below the title. Summary below (14px, `sub`, line-height 1.4).
 - Selected row: background `panel-2` `#DEDDD8` and title in `selected` `#1C653A`. Unselected rows use the `.wash` hover on the title.
+- The selected title holds the wash at its green end (`background-position: 0 100%`). When another row is selected, the previous title runs the wash in reverse: ink sweeps back in from the top right to the bottom left, at the same constant speed. Reduced motion: it turns ink instantly.
 - With JS the `panel-2` background is one highlight behind the rows that slides and resizes to the newly selected row (600ms ease-out). It is placed instantly on load and on resize. Reduced motion: it moves instantly. Without JS each selected button keeps its own background.
 - The first project is selected on load.
 
