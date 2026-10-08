@@ -23,6 +23,11 @@
   --header-back: 3rem;
 }
 
+/* Anchors and keyboard focus land below the sticky header */
+html {
+  scroll-padding-top: calc(var(--header-row) + 2 * var(--header-pad));
+}
+
 .wash {
   background-image: linear-gradient(45deg, #1C653A 50%, #171717 50%);
   background-size: 300% 300%;

@@ -1,0 +1,84 @@
+---
+// Shared detail content for the desktop panel and the mobile accordion.
+// Title and dates live in each layout, since they sit in different places.
+import { Image } from 'astro:assets';
+import { Icon } from 'astro-icon/components';
+import { render, type CollectionEntry } from 'astro:content';
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+}
+
+const { project } = Astro.props;
+const { image, metric, tags, github, devpost, video, live } = project.data;
+const { Content } = await render(project);
+
+const links = [
+  { label: 'View on GitHub', href: github },
+  { label: 'View on Devpost', href: devpost },
+  { label: 'Watch video', href: video },
+  { label: 'Visit live site', href: live },
+].filter((link) => link.href);
+
+const focusRing = 'rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-selected';
+---
+
+{image && (
+  <div class="h-[220px] shrink-0 overflow-hidden rounded-md bg-panel-2">
+    {/* contain, not cover: architecture diagrams must not be cropped */}
+    <Image src={image.src} alt={image.alt} height={440} class="size-full object-contain" />
+  </div>
+)}
+
+<div class="body flex shrink-0 flex-col gap-4">
+  <Content />
+</div>
+
+{metric && <p class="shrink-0 text-base font-semibold">{metric}</p>}
+
+<ul class="flex shrink-0 flex-wrap gap-2">
+  {tags.map((tag) => <li class="rounded-full bg-bg px-2.5 py-0.5 text-[13px] text-sub">{tag}</li>)}
+</ul>
+
+{links.length > 0 && (
+  <ul class="flex shrink-0 flex-wrap gap-x-6 gap-y-2">
+    {links.map(({ label, href }) => (
+      <li>
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={`${label} (opens in new tab)`}
+          class={`group inline-flex items-center gap-1 ${focusRing}`}
+        >
+          <span class="wash">{label}</span>
+          <Icon name="lucide:arrow-up-right" class="size-4 text-ink group-hover:text-selected group-focus-visible:text-selected" aria-hidden="true" />
+        </a>
+      </li>
+    ))}
+  </ul>
+)}
+
+<style>
+  /* Rendered Markdown body: description, bullets, key decision and teammates line */
+  .body :global(p),
+  .body :global(li) {
+    font-size: 17px;
+    line-height: 1.6;
+    max-width: 68ch;
+  }
+  .body :global(ul) {
+    list-style: disc;
+    padding-left: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  .body :global(strong) {
+    font-weight: 600;
+  }
+  .body :global(code) {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.85em;
+  }
+</style>
