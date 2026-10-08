@@ -5,13 +5,13 @@
 @import "@fontsource/newsreader/600.css";
 
 @theme {
-  --color-bg: #F7F6F1;
-  --color-selected: #1C653A;
+  --color-bg: #F7F6F0;
+  --color-selected: #006930;
   --color-ink: #171717;
-  --color-sub: #64635F;
-  --color-panel: #E8E7E2;
-  --color-panel-2: #DEDDD8;
-  --color-divider: #CFCEC8;
+  --color-sub: #64635E;
+  --color-panel: #E8E7E1;
+  --color-panel-2: #DEDDD7;
+  --color-divider: #CFCEC6;
 
   --font-serif: "Newsreader", Georgia, "Times New Roman", serif;
 }
