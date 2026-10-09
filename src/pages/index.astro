@@ -1,10 +1,35 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+
+const links = [
+  { label: 'Resume', href: '/resume' },
+  { label: 'Experience', href: '/experience' },
+  { label: 'Projects', href: '/projects' },
+  { label: 'About', href: '/about' },
+];
+
+const focusRing = 'rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-selected';
 ---
 
 <BaseLayout
   title="Raymond Cen"
   description="[Home meta description]"
 >
-  <p>Raymond Cen. Site in progress.</p>
+  <h1 class="sr-only">Raymond Cen</h1>
+  <nav aria-label="Main" class="grid place-items-center px-6 py-8">
+    <ul class="text-center text-5xl/[1.55] font-medium sm:text-6xl/[1.55]">
+      {links.map(({ label, href }) => (
+        <li>
+          <a href={href} class={`wash inline-block ${focusRing}`}>{label}</a>
+        </li>
+      ))}
+    </ul>
+  </nav>
 </BaseLayout>
+
+<style>
+  /* main gets its height from flex, so a percentage height can't fill it. As a one-cell grid its row stretches to main's height and the nav centers in it. */
+  :global(main:has(> nav[aria-label="Main"])) {
+    display: grid;
+  }
+</style>
