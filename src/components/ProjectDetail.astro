@@ -16,7 +16,8 @@ const { image, metric, tags, github, devpost, video, live } = project.data;
 const { Content } = await render(project);
 
 // Same options as the inline <Image>, so this resolves to the thumbnail the page already loaded
-const thumb = image && (await getImage({ src: image.src, height: 440 }));
+// Eager: lazy images inside hidden blocks don't start loading until shown, so a first click flashed blank
+const thumb = image && (await getImage({ src: image.src, height: 440, loading: 'eager' }));
 // The enlarged image's final size, set before it loads so the popover never collapses to the close button
 const enlarged = image && {
   width: Math.min(image.src.width, 1600),
