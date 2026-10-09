@@ -26,7 +26,7 @@
   --header-back: 2.25rem;
   @media (width >= 40rem) { --header-back: 3rem; }
   /* Wash speed: time per pixel of element width + height. Lower is faster. */
-  --wash-ms-per-px: 1.7ms;
+  --wash-ms-per-px: 1.65ms;
 }
 
 /* Anchors and keyboard focus land below the sticky header */

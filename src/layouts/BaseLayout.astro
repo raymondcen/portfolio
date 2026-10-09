@@ -29,7 +29,8 @@ const focusRing = 'rounded-sm focus-visible:outline-2 focus-visible:outline-offs
 
 const socials = [
   { label: 'LinkedIn', icon: 'lucide:linkedin', href: 'https://www.linkedin.com/in/rcen/' },
-  { label: 'Email', icon: 'lucide:mail', href: 'mailto:[email]' },
+  // Spam protection: the address is never in the HTML. The footer script joins the parts.
+  { label: 'Email', icon: 'lucide:mail', email: { user: 'contact', domain: 'rcen.dev' } },
   { label: 'GitHub', icon: 'lucide:github', href: 'https://github.com/raymondcen' },
 ];
 ---
@@ -76,7 +77,14 @@ const socials = [
     <footer class="sticky bottom-0 shrink-0 bg-bg py-4">
       <slot name="footer" />
       <ul class="flex justify-center gap-8">
-        {socials.map(({ label, icon, href }) => {
+        {socials.map(({ label, icon, href, email }) => {
+          if (email) return (
+            <li hidden data-email-user={email.user} data-email-domain={email.domain}>
+              <a aria-label={label} class={`block ${focusRing}`}>
+                <Icon name={icon} class="size-6" aria-hidden="true" />
+              </a>
+            </li>
+          );
           const external = href.startsWith('http');
           return (
             <li>
@@ -105,6 +113,11 @@ const socials = [
           }
         });
         for (const el of document.querySelectorAll('.wash')) washObserver.observe(el);
+      }
+      // Join the email parts so the address never appears in the built HTML. Without JS the item stays hidden.
+      for (const li of document.querySelectorAll('[data-email-user]')) {
+        li.querySelector('a').href = `mailto:${li.dataset.emailUser}@${li.dataset.emailDomain}`;
+        li.hidden = false;
       }
     </script>
   </body>
