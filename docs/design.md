@@ -61,13 +61,13 @@ No backend, database, CMS, contact form, UI component library, animation library
 
 | Token | Hex | Use |
 |---|---|---|
-| bg | `#F7F6F1` | Page background |
-| selected | `#1C653A` | Hover, focus, 嘉安 |
+| bg | `#F7F6F0` | Page background |
+| selected | `#006930` | Hover, focus, 嘉安 |
 | ink | `#171717` | Body text |
-| sub | `#64635F` | Secondary text, tags |
-| panel | `#E8E7E2` | Experience and Projects card |
-| panel-2 | `#DEDDD8` | Image slot, PDF border |
-| divider | `#CFCEC8` | Lines between entries |
+| sub | `#64635E` | Secondary text, tags |
+| panel | `#E8E7E1` | Experience and Projects card |
+| panel-2 | `#DEDDD7` | Image slot, PDF border |
+| divider | `#CFCEC6` | Lines between entries |
 
 Font: Newsreader (serif), Georgia fallback.
 
@@ -82,20 +82,20 @@ Layout
 - Content container: max-width 1120px, centered, 32px horizontal padding, 8px vertical padding.
 - Two panels side by side with a 24px gap. Both stretch to the same height and line up top and bottom.
 - Left list panel: `flex: 0 1 360px`. Right detail panel: `flex: 1 1 560px; min-width: 0`.
-- Both panels: background `panel` `#E8E7E2`, radius 10px, `overflow-y: auto`, `overflow-x: hidden`, `scrollbar-gutter: stable`, thin scrollbar (`#B9B8B3` thumb, transparent track).
+- Both panels: background `panel` `#E8E7E1`, radius 10px, `overflow-y: auto`, `overflow-x: hidden`, `scrollbar-gutter: stable`, thin scrollbar (`#B9B8B3` thumb, transparent track).
 
 List panel
 - 8px padding. One row per project, ordered by the display order field.
 - Each row is a real `<button>` with `aria-current` on the selected row. Minimum height 44px, padding 14px 16px, radius 6px.
-- Row content: title (18px, 600) and dates (13px, `sub` `#64635F`) on one line that wraps when narrow, so the date drops below the title. Summary below (14px, `sub`, line-height 1.4).
-- Selected row: background `panel-2` `#DEDDD8` and title in `selected` `#1C653A`. Unselected rows use the `.wash` hover on the title.
+- Row content: title (18px, 600) and dates (13px, `sub` `#64635E`) on one line that wraps when narrow, so the date drops below the title. Summary below (14px, `sub`, line-height 1.4).
+- Selected row: background `panel-2` `#DEDDD7` and title in `selected` `#006930`. Unselected rows use the `.wash` hover on the title.
 - The selected title holds the wash at its green end (`background-position: 0 100%`). When another row is selected, the previous title runs the wash in reverse: ink sweeps back in from the top right to the bottom left, at the same constant speed. Reduced motion: it turns ink instantly.
 - With JS the `panel-2` background is one highlight behind the rows that slides and resizes to the newly selected row (600ms ease-out). It is placed instantly on load and on resize. Reduced motion: it moves instantly. Without JS each selected button keeps its own background.
 - The first project is selected on load.
 
 Detail panel
 - 28px 32px padding, flex column, 16px gap. All children `flex-shrink: 0`.
-- Same section order for every project, skipping empty fields: title (32px, 600; plays the wash sweep to `selected` `#1C653A` each time the project is shown and stays green, instant green under reduced motion) with dates right-aligned (15px, `sub`) and wrapping when narrow, image slot (220px tall, `panel-2`, only when the project has an image), description (17px, line-height 1.6, max-width 68ch), role bullets, metric line (16px, 600), tag pills (13px, `sub` on `bg` `#F7F6F1`, fully rounded, wrapping), "View on GitHub" link with external-link arrow.
+- Same section order for every project, skipping empty fields: title (32px, 600; plays the wash sweep to `selected` `#006930` each time the project is shown and stays green, instant green under reduced motion) with dates right-aligned (15px, `sub`) and wrapping when narrow, image slot (220px tall, `panel-2`, only when the project has an image), description (17px, line-height 1.6, max-width 68ch), role bullets, metric line (16px, 600), tag pills (13px, `sub` on `bg` `#F7F6F0`, fully rounded, wrapping), "View on GitHub" link with external-link arrow.
 - The panel keeps a fixed shape. It never resizes to fit content.
 - `tabindex="0"` and `aria-label="Project details"` so keyboard users can scroll it.
 - Reset `scrollTop` to 0 when the selected project changes.
@@ -114,11 +114,11 @@ Behavior
 **Projects: mobile (< 900px)**
 - Unchanged: the native `<details name="projects">` accordion from the wireframe, with normal page scrolling. Sharing a `name` gives one-open-at-a-time with zero JavaScript in current Chrome, Safari and Firefox. Older browsers allow several open at once, which is an acceptable fallback.
 - The first project is open on load. No hash links to individual projects.
-- Open item: title and chevron in `selected` `#1C653A`, like the selected row on desktop. Closed items use the `.wash` hover.
+- Open item: title and chevron in `selected` `#006930`, like the selected row on desktop. Closed items use the `.wash` hover.
 - The viewport lock does not apply below 900px.
 
 **Diagonal wash animation**
-Every hover color change uses a diagonal wash: green `#1C653A` sweeps over ink `#171717` at a 45° angle, bottom-left to top-right. Unhovering reverses the sweep. Applies to nav items, Back, footer icons, project titles and chevrons and the Download PDF fill.
+Every hover color change uses a diagonal wash: green `#006930` sweeps over ink `#171717` at a 45° angle, bottom-left to top-right. Unhovering reverses the sweep. Applies to nav items, Back, footer icons, project titles and chevrons and the Download PDF fill.
 
 How it works: a 45° linear gradient with a hard color stop (green on the bottom-left half, ink on the top-right half) sits on a background twice the element's size. At rest `background-position: 100% 0` shows ink, with the edge on the bottom-left corner. Hover slides it to `0 100%` so the green half crosses the element and the edge ends on the top-right corner.
 
@@ -126,7 +126,7 @@ Constant speed: the edge moves at the same pixel speed on every element, so shor
 
 ```css
 .wash {
-  background-image: linear-gradient(45deg, #1C653A 50%, #171717 50%);
+  background-image: linear-gradient(45deg, var(--color-selected) 50%, var(--color-ink) 50%);
   background-size: 200% 200%;
   background-position: 100% 0;                /* ink showing */
   -webkit-background-clip: text;
@@ -145,7 +145,7 @@ Constant speed: the edge moves at the same pixel speed on every element, so shor
 ```
 
 - Text (nav, Back, project titles): the `.wash` pattern above.
-- Download PDF button: same gradient and direction (bottom left to top right) on the button fill without `background-clip: text`; label stays `#F7F6F1`.
+- Download PDF button: same gradient and direction (bottom left to top right) on the button fill without `background-clip: text`; label stays `#F7F6F0`.
 - Footer icons and chevrons: SVG strokes can't use `background-clip`. Put the gradient on a wrapper and use the icon as a CSS `mask-image`. Same direction: green enters from the bottom left.
 - Back chevron, interim: it turns `selected` instantly on hover or keyboard focus of the Back link (`group-hover:text-selected group-focus-visible:text-selected`), with no sweep. Replace it with the mask-image wash above.
 - Wrap hover in `@media (hover: hover)` so phone taps don't leave items stuck green.
@@ -159,9 +159,9 @@ Embedded PDFs render poorly on iOS Safari and most mobile browsers: often only t
 **嘉安 mark**
 Newsreader has no CJK glyphs. Use an inline SVG of the characters, not a CJK web font. A full CJK font is several MB and would break the 200 KB page budget. The mark is 嘉安 side by side, 嘉 left of 安. Glyphs are Noto Serif SC Bold converted to SVG paths; no font loads at runtime.
 
-`src/assets/an.svg` has viewBox `0 0 1937 939` (landscape, about 2:1). Fill `#1C653A` sits on a wrapping `<g>`, not on each path, so the `fill="currentColor"` replace in `BaseLayout.astro` recolors both glyphs. `BaseLayout` also strips the C2PA metadata.
+`src/assets/an.svg` has viewBox `0 0 1937 939` (landscape, about 2:1). Fill `#006930` sits on a wrapping `<g>`, not on each path, so the `fill="currentColor"` replace in `BaseLayout.astro` recolors both glyphs. `BaseLayout` also strips the C2PA metadata.
 
-Favicon (`public/favicon.svg`, `favicon-32.png`, `apple-touch-icon.png`): 嘉安 side by side on the `#F7F6F1` rounded square, viewBox `0 0 1127 1127`. Known trade-off: 嘉 is illegible at 16px.
+Favicon (`public/favicon.svg`, `favicon-32.png`, `apple-touch-icon.png`): 嘉安 side by side on the `#F7F6F0` rounded square, viewBox `0 0 1127 1127`. Known trade-off: 嘉 is illegible at 16px.
 
 The mark is decorative: not a link, not focusable and not selectable (`select-none`). The SVG is `aria-hidden` since the name sits next to it in the header. It shows on `/` only; every other page shows Back in the same slot. Hovering the mark shows `"blessed peace"`, quotation marks included, through the native `title` tooltip. Keyboard and touch users don't see it, which is acceptable for decoration.
 
