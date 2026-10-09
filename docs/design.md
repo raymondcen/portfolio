@@ -207,7 +207,7 @@ One row on every page, so "Raymond Cen" sits at the same y everywhere. Sizes are
 Self-host Newsreader (Fontsource package), use `font-display: swap` and preload the regular weight. Only weights 400, 500 and 600 are used.
 
 **Home page SEO**
-Home shows no positioning text. Home title: "Raymond Cen". The home meta description and Open Graph description must carry the positioning (CS and Data Science, Oregon State). Other pages use "<Page> | Raymond Cen" (404: "Page not found | Raymond Cen"). Meta descriptions are still `[bracketed]` placeholders, including home's `[Home meta description]`.
+Home shows no positioning text. Home title: "Raymond Cen". The home meta description and Open Graph description must carry the positioning (CS and Data Science, Oregon State). Other pages use "<Page> | Raymond Cen" (404: "404 | Raymond Cen"). Meta descriptions are still `[bracketed]` placeholders, including home's `[Home meta description]`.
 
 **Nav**
 The nav shows on `/` only, in this order: Resume, Experience, Projects, About. Resume is first because it is what most recruiters want. There is no Home item: `/` is the nav, and every other page returns to it through Back. The header name is not a link.
@@ -224,5 +224,5 @@ Scrapers harvest addresses from `mailto:` links and plain text in HTML. Approach
 - Without JS the email icon is not rendered. LinkedIn stays as the contact path.
 - After deploy, check that the full address does not appear in view-source or in `curl https://rcen.dev`.
 
-**Not designed yet**
-`/404`. Keep it minimal: same header, a one-line message and a link home.
+**404 page**
+`/404`: same header and footer. Centered between them, a large "404" in `selected` (`font-medium`, `text-8xl`, `sm:text-9xl`) with "This page doesn't exist" below in `ink` (`text-xl`, `sm:text-2xl`). Nothing else: the header Back link is the way home. `wrangler.jsonc` sets `not_found_handling: "404-page"`, so unknown routes get `404.html` with a 404 status.

@@ -2,6 +2,18 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
-<BaseLayout title="Page not found | Raymond Cen" description="[404 meta description]" noindex>
-  <p>Raymond Cen. Site in progress.</p>
+<BaseLayout title="404 | Raymond Cen" description="[404 meta description]" noindex>
+  <div class="not-found grid place-items-center px-6 py-8 text-center">
+    <div>
+      <h1 class="text-8xl leading-none font-medium text-selected sm:text-9xl">404</h1>
+      <p class="mt-4 text-xl text-ink sm:text-2xl">This page doesn't exist</p>
+    </div>
+  </div>
 </BaseLayout>
+
+<style>
+  /* Same as home: main gets its height from flex, so as a one-cell grid its row stretches and the content centers in it. */
+  :global(main:has(> .not-found)) {
+    display: grid;
+  }
+</style>
