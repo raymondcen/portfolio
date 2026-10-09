@@ -52,3 +52,22 @@ html {
 @media (prefers-reduced-motion: reduce) {
   .wash { transition: none; }
 }
+
+/* Same wash on a button fill: no background-clip, so the label stays bg */
+.btn-wash {
+  background-image: linear-gradient(45deg, var(--color-selected) 50%, var(--color-ink) 50%);
+  background-size: 200% 200%;
+  background-position: 100% 0;
+  color: var(--color-bg);
+  /* BaseLayout's observer only measures .wash; the Download button is a fixed 186 x 40 box */
+  --wash-size: 226;
+  --wash-duration: calc(var(--wash-size, 240) * var(--wash-ms-per-px));
+  transition: background-position var(--wash-duration) linear;
+}
+@media (hover: hover) {
+  .btn-wash:hover { background-position: 0 100%; }
+}
+.btn-wash:focus-visible { background-position: 0 100%; }
+@media (prefers-reduced-motion: reduce) {
+  .btn-wash { transition: none; }
+}

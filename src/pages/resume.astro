@@ -1,7 +1,41 @@
 ---
+import { Icon } from 'astro-icon/components';
 import BaseLayout from '../layouts/BaseLayout.astro';
+
+const pdf = '/resume.pdf';
+const focusRing = 'focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-selected';
+const openLink = `wash text-lg underline decoration-sub underline-offset-4 rounded-sm ${focusRing}`;
 ---
 
-<BaseLayout title="Resume | Raymond Cen" description="[Resume meta description]">
-  <p>Raymond Cen. Site in progress.</p>
+<BaseLayout title="Resume | Raymond Cen" description="[Resume meta description]" lockViewport>
+  <div class="flex flex-col items-center gap-4 px-6 py-2 sm:px-8 min-[900px]:h-full">
+    <h1 class="text-4xl font-medium">Resume</h1>
+
+    {/* Desktop only: mobile browsers show one page of an embedded PDF or nothing */}
+    <object
+      data={`${pdf}#navpanes=0&view=FitH`}
+      type="application/pdf"
+      title="Raymond Cen resume (PDF)"
+      class="hidden min-h-0 w-full max-w-[860px] flex-1 border border-panel-2 min-[900px]:block"
+    >
+      <a href={pdf} class={openLink}>Open PDF</a>
+    </object>
+
+    <a
+      href={pdf}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Open PDF (opens in new tab)"
+      class={`${openLink} min-[900px]:hidden`}
+    >Open PDF</a>
+
+    <a
+      href={pdf}
+      download="resume.pdf"
+      class={`btn-wash flex shrink-0 items-center gap-2 rounded-full px-5 py-2.5 text-lg leading-none ${focusRing}`}
+    >
+      <Icon name="lucide:download" class="size-5" aria-hidden="true" />
+      Download PDF
+    </a>
+  </div>
 </BaseLayout>

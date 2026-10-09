@@ -49,7 +49,7 @@ Sitemap: `/`, `/experience`, `/projects`, `/resume`, `/about`, `/resume.pdf`, `/
 
 ### Static files in `public/`
 
-- `Raymond-Cen-Resume.pdf`: embedded on `/resume` and used by the Download button
+- `resume.pdf`: embedded on `/resume` and used by the Download button
 - `og-image.png` (1200x630): preview image when the site is shared on LinkedIn
 - `robots.txt`, `favicon.svg`, `favicon-32.png`, `apple-touch-icon.png`
 
@@ -153,8 +153,12 @@ Constant speed: the edge moves at the same pixel speed on every element, so shor
 - Check that text stays selectable and that screen readers still read it. `color: transparent` with `background-clip: text` is fine for both, but verify in Safari.
 - Tune the angle, duration and stop softness in the browser. A slightly soft stop (for example `48%, 52%`) can look smoother than a hard edge on small text.
 
-**Resume PDF embed**
-Embedded PDFs render poorly on iOS Safari and most mobile browsers: often only the first page, or nothing. Plan a fallback, either a first-page image with an "Open PDF" link on small screens or a direct link. Name the file `Raymond-Cen-Resume.pdf`.
+**Resume**
+The file is `public/resume.pdf`. The page shows a centered "Resume" heading, the PDF and a Download PDF button (`download="resume.pdf"`).
+
+- Desktop (≥ 900px): `<object data="/resume.pdf#navpanes=0&view=FitH" type="application/pdf">` with a `title` for screen readers and an "Open PDF" link as fallback content. Border `panel-2`, centered, max-width 860px so a letter page reads at about 100% in Chrome's viewer. The page uses `lockViewport`: the object fills the height between header and footer and the PDF scrolls inside it. On short windows the object shrinks rather than the page scrolling.
+- Mobile (< 900px): no embed, since iOS Safari and most mobile browsers show one page or nothing. Instead a direct "Open PDF" link (new tab, `aria-label` ending "(opens in new tab)") and the Download button. The switch is Tailwind responsive classes, no JS.
+- Download button: `ink` fill, `bg` label, `.btn-wash` in global.css. Its `--wash-size` is a constant 226 (the button's fixed width plus height), since BaseLayout's observer only measures `.wash`.
 
 **嘉安 mark**
 Newsreader has no CJK glyphs. Use an inline SVG of the characters, not a CJK web font. A full CJK font is several MB and would break the 200 KB page budget. The mark is 嘉安 side by side, 嘉 left of 安. Glyphs are Noto Serif SC Bold converted to SVG paths; no font loads at runtime.
