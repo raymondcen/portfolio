@@ -1,6 +1,6 @@
 # Design: rcen.dev
 
-This file is the source of truth for stack, tokens and behavior. Images and PDFs in docs/ are layout references. docs/wireframe.pdf still shows Projects as an accordion on desktop; section 4 supersedes it.
+This file is the source of truth for stack, tokens and behavior. Images and PDFs in docs/ are layout references. docs/wireframe.pdf still shows Projects as an accordion on desktop; section 4 supersedes it. It also shows a Home item in the home nav; the Nav section in section 4 supersedes it.
 
 ## 1. Decisions
 
@@ -10,6 +10,7 @@ The original plan described a single-page landing. The wireframes replace it.
 |---|---|
 | Single page with anchor sections | Multi-page: `/`, `/experience`, `/projects`, `/resume`, `/about` |
 | Hero with positioning line and CTAs | Home is name, nav and icons only |
+| Nav with a Home item | No Home item. Home is the nav itself, and Back returns to it |
 | Featured cards plus "More projects" | All projects in one list: split view (list plus detail panel) on desktop, accordion on mobile |
 | `/projects/[slug]` case study pages | None. Details open in the detail panel on desktop and expand in place on mobile |
 | Skills and Contact sections | Omitted. Contact is the footer icons |
@@ -191,7 +192,9 @@ Self-host Newsreader (Fontsource package), use `font-display: swap` and preload 
 **Home page SEO**
 Home shows no positioning text. Home title: "Raymond Cen". The home meta description and Open Graph description must carry the positioning (CS and Data Science, Oregon State). Other pages use "<Page> | Raymond Cen" (404: "Page not found | Raymond Cen"). Meta descriptions are still `[bracketed]` placeholders, including home's `[Home meta description]`.
 
-**Nav state**
+**Nav**
+The nav shows on `/` only, in this order: Resume, Experience, Projects, About. Resume is first because it is what most recruiters want. There is no Home item: `/` is the nav, and every other page returns to it through Back. The header name is not a link.
+
 Mark the current page with `aria-current="page"`.
 
 **Footer links**
