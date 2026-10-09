@@ -1,7 +1,64 @@
 ---
+import { getCollection, render } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { dates } from '../lib/dates';
+
+const entries = await Promise.all(
+  (await getCollection('experience'))
+    .sort((a, b) => a.data.order - b.data.order)
+    .map(async (entry) => ({ ...entry.data, Content: (await render(entry)).Content })),
+);
 ---
 
 <BaseLayout title="Experience | Raymond Cen" description="[Experience meta description]">
-  <p>Raymond Cen. Site in progress.</p>
+  <h1 class="sr-only">Experience</h1>
+
+  <div class="px-4 pb-4">
+    <div class="mx-auto max-w-[720px] rounded-[10px] bg-panel px-8 py-7 [overflow-wrap:break-word]">
+      {entries.map(({ title, organization, unit, location, summary, tags, Content, ...range }) => (
+        <article class="flex flex-col gap-4 border-b border-divider py-7 first:pt-0 last:border-b-0 last:pb-0">
+          <div class="flex flex-col gap-x-6 gap-y-1 sm:flex-row sm:flex-wrap sm:justify-between">
+            <div class="min-w-0">
+              <h2 class="text-2xl font-semibold [overflow-wrap:anywhere]">{title}</h2>
+              <p class="text-[15px] text-sub">{[organization, unit].filter(Boolean).join(', ')}</p>
+            </div>
+            <div class="text-[15px] text-sub sm:text-right">
+              <p class="italic">{dates(range)}</p>
+              <p>{location}</p>
+            </div>
+          </div>
+
+          {summary && <p class="max-w-[68ch] text-[17px] leading-[1.6]">{summary}</p>}
+
+          <div class="body flex flex-col gap-4">
+            <Content />
+          </div>
+
+          <ul class="flex flex-wrap gap-2">
+            {tags.map((tag) => <li class="rounded-full bg-bg px-2.5 py-0.5 text-[13px] text-sub">{tag}</li>)}
+          </ul>
+        </article>
+      ))}
+    </div>
+  </div>
 </BaseLayout>
+
+<style>
+  /* Rendered Markdown bullets, matching the Projects role bullets in ProjectDetail */
+  .body :global(p),
+  .body :global(li) {
+    font-size: 17px;
+    line-height: 1.6;
+    max-width: 68ch;
+  }
+  .body :global(ul) {
+    list-style: disc;
+    padding-left: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  .body :global(strong) {
+    font-weight: 600;
+  }
+</style>

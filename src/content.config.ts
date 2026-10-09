@@ -1,4 +1,4 @@
-import { defineCollection, reference } from 'astro:content';
+import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 
@@ -63,7 +63,6 @@ const experience = defineCollection({
       teamSize: z.number().int().positive().optional(),
       role: z.string().optional(), // assigned team role, distinct from the title
       github: z.url().optional(),
-      project: reference('projects').optional(), // links to the matching projects entry
     })
     .refine(endNotBeforeStart, endError),
 });
