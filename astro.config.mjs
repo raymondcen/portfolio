@@ -12,6 +12,10 @@ export default defineConfig({
     plugins: [tailwindcss()]
   },
   integrations: [sitemap(), icon()],
+  // Inline CSS so back navigation can never paint an unstyled frame while a stylesheet revalidates
+  build: {
+    inlineStylesheets: 'always'
+  },
   devToolbar: {
     enabled: false
   }
