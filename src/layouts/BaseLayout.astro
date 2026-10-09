@@ -23,7 +23,8 @@ const an = anSvg
   .replace(/<metadata>[\s\S]*?<\/metadata>/, '')
   .replace(/ xmlns:c2pa="[^"]*"/, '')
   .replace(/fill="[^"]*"/, 'fill="currentColor"')
-  .replace('<svg', '<svg aria-hidden="true" class="block h-(--header-mark) w-auto"');
+  // width/height keep it header-sized in any frame painted before the stylesheet applies; the class overrides them
+  .replace('<svg', '<svg aria-hidden="true" width="87" height="42" class="block h-(--header-mark) w-auto"');
 
 const focusRing = 'rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-selected';
 
