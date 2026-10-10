@@ -9,14 +9,14 @@ const openLink = `wash text-lg underline decoration-sub underline-offset-4 round
 
 <BaseLayout title="Resume | Raymond Cen" description="[Resume meta description]" lockViewport>
   <div class="flex flex-col items-center gap-4 px-6 py-2 sm:px-8 min-[900px]:h-full">
-    <h1 class="text-4xl font-medium">Resume</h1>
+    <h1 class="sr-only">Resume</h1>
 
     {/* Desktop only: mobile browsers show one page of an embedded PDF or nothing */}
     <object
       data={`${pdf}#navpanes=0&view=FitH`}
       type="application/pdf"
       title="Raymond Cen resume (PDF)"
-      class="hidden min-h-0 w-full max-w-[860px] flex-1 border border-panel-2 min-[900px]:block"
+      class="hidden min-h-0 w-full max-w-[860px] flex-1 border-[4px] rounded border-selected min-[900px]:block"
     >
       <a href={pdf} class={openLink}>Open PDF</a>
     </object>

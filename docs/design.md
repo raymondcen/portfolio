@@ -174,9 +174,9 @@ The Novak Lab capstone is shown under Projects only, not Experience.
 - Nothing on the page is interactive: no hover effects and no JS.
 
 **Resume**
-The file is `public/resume.pdf`. The page shows a centered "Resume" heading, the PDF and a Download PDF button (`download="resume.pdf"`).
+The file is `public/resume.pdf`. The page shows the PDF and a Download PDF button (`download="resume.pdf"`). No visible heading so the PDF gets the height; a screen-reader-only `<h1>Resume</h1>` keeps the page outline.
 
-- Desktop (≥ 900px): `<object data="/resume.pdf#navpanes=0&view=FitH" type="application/pdf">` with a `title` for screen readers and an "Open PDF" link as fallback content. Border `panel-2`, centered, max-width 860px so a letter page reads at about 100% in Chrome's viewer. The page uses `lockViewport`: the object fills the height between header and footer and the PDF scrolls inside it. On short windows the object shrinks rather than the page scrolling.
+- Desktop (≥ 900px): `<object data="/resume.pdf#navpanes=0&view=FitH" type="application/pdf">` with a `title` for screen readers and an "Open PDF" link as fallback content. Border `selected`, centered, max-width 860px so a letter page reads at about 100% in Chrome's viewer. The page uses `lockViewport`: the object fills the height between header and footer and the PDF scrolls inside it. On short windows the object shrinks rather than the page scrolling.
 - Mobile (< 900px): no embed, since iOS Safari and most mobile browsers show one page or nothing. Instead a direct "Open PDF" link (new tab, `aria-label` ending "(opens in new tab)") and the Download button. The switch is Tailwind responsive classes, no JS.
 - Download button: `ink` fill, `bg` label, `.btn-wash` in global.css. Its `--wash-size` is a constant 226 (the button's fixed width plus height), since BaseLayout's observer only measures `.wash`.
 
