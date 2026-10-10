@@ -16,7 +16,8 @@ const focusRing = 'rounded-sm focus-visible:outline-2 focus-visible:outline-offs
   description="[Home meta description]"
 >
   <h1 class="sr-only">Raymond Cen</h1>
-  <nav aria-label="Main" class="grid place-items-center px-6 py-8">
+  {/* Extra bottom padding = header height minus footer height (py-4 + 24px icons = 3.5rem), so the nav centers in the viewport, not just in main */}
+  <nav aria-label="Main" class="grid place-items-center px-6 pt-8 pb-[calc(2rem+var(--header-row)+2*var(--header-pad)-3.5rem)]">
     <ul class="text-center text-5xl/[1.55] font-medium sm:text-6xl/[1.55]">
       {links.map(({ label, href }) => (
         <li>
