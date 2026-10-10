@@ -15,20 +15,20 @@ const entries = await Promise.all(
 
   <div class="px-4 pb-4">
     <div class="mx-auto max-w-[720px] rounded-[10px] bg-panel px-8 py-7 [overflow-wrap:break-word]">
-      {entries.map(({ title, organization, unit, location, summary, tags, Content, ...range }) => (
+      {entries.map(({ title, organization, location, summary, tags, Content, ...range }) => (
         <article class="flex flex-col gap-4 border-b border-divider py-7 first:pt-0 last:border-b-0 last:pb-0">
-          <div class="flex flex-col gap-x-6 gap-y-1 sm:flex-row sm:flex-wrap sm:justify-between">
-            <div class="min-w-0">
-              <h2 class="text-2xl font-semibold [overflow-wrap:anywhere]">{title}</h2>
-              <p class="text-[15px] text-sub">{[organization, unit].filter(Boolean).join(', ')}</p>
+          <div class="flex flex-col gap-1">
+            <div class="flex flex-wrap items-baseline justify-between gap-x-6">
+              <h2 class="min-w-0 text-2xl font-semibold [overflow-wrap:anywhere]">{title}</h2>
+              <p class="text-[15px] text-sub italic">{dates(range)}</p>
             </div>
-            <div class="text-[15px] text-sub sm:text-right">
-              <p class="italic">{dates(range)}</p>
+            <div class="flex flex-wrap justify-between gap-x-6 text-[15px] text-sub">
+              <p>{organization}</p>
               <p>{location}</p>
             </div>
           </div>
 
-          {summary && <p class="max-w-[68ch] text-[17px] leading-[1.6]">{summary}</p>}
+          <p class="max-w-[68ch] text-[17px] leading-[1.6]">{summary}</p>
 
           <div class="body flex flex-col gap-4">
             <Content />

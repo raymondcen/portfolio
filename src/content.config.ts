@@ -53,13 +53,12 @@ const experience = defineCollection({
       location: z.string().min(1),
       start: month,
       type: z.string().min(1), // employment or enrollment type
+      summary: z.string().min(1), // one line
       tags,
       order: z.number().int(),
 
       // Optional
       end: month.optional(), // absent means present
-      unit: z.string().optional(), // department, lab or team inside the organization
-      summary: z.string().optional(),
       teamSize: z.number().int().positive().optional(),
       role: z.string().optional(), // assigned team role, distinct from the title
       github: z.url().optional(),

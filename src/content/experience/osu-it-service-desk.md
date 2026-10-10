@@ -1,7 +1,6 @@
 ---
 title: IT Technician
 organization: Oregon State University
-unit: OSU IT Tier 1 Service Desk
 location: Corvallis, OR
 start: "2026-06"
 type: Part-time student employee
