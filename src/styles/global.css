@@ -53,6 +53,47 @@ html {
   .wash { transition: none; }
 }
 
+/* Icon wash: the gradient fills the box and the icon (--icon, set by BaseLayout) is its mask, since SVG strokes
+   can't use background-clip. The parent link triggers it. The registered --wash-p (0 at rest, 1 swept) is what
+   transitions; background-position is computed from it. Footer icons are a fixed 24 x 24 box, so their wash size
+   is a constant 48. */
+@property --wash-p {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
+.icon-wash {
+  display: block;
+  background-image: linear-gradient(45deg, var(--color-selected) 50%, var(--color-ink) 50%);
+  background-size: 200% 200%;
+  background-position: calc((1 - var(--wash-p)) * 100%) calc(var(--wash-p) * 100%);
+  mask: var(--icon) center / contain no-repeat;
+  transition: --wash-p calc(48 * var(--wash-ms-per-px)) linear;
+}
+@media (hover: hover) {
+  a:hover > .icon-wash { --wash-p: 1; }
+}
+a:focus-visible > .icon-wash { --wash-p: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .icon-wash { transition: none; }
+}
+
+/* Icon inside a .wash link (the Back chevron): paint the link's gradient at the icon's offset in the link, with the
+   link's duration, so one edge crosses the chevron and then the text. BaseLayout's script measures --wash-w, --wash-h,
+   --icon-x and --icon-y; without JS the fallbacks reduce it to the icon's own sweep. Because only --wash-p
+   transitions, a new measurement (font load, resize) applies at once instead of sweeping at rest. */
+.wash > .icon-wash {
+  --w: var(--wash-w, var(--header-back));
+  --h: var(--wash-h, var(--header-back));
+  --x: var(--icon-x, 0px);
+  --y: var(--icon-y, 0px);
+  background-size: calc(2 * var(--w)) calc(2 * var(--h));
+  background-position:
+    calc(-1 * var(--x) - (1 - var(--wash-p)) * var(--w))
+    calc(-1 * var(--y) - var(--wash-p) * var(--h));
+  transition-duration: var(--wash-duration);
+}
+
 /* Same wash on a button fill: no background-clip, so the label stays bg */
 .btn-wash {
   background-image: linear-gradient(45deg, var(--color-selected) 50%, var(--color-ink) 50%);

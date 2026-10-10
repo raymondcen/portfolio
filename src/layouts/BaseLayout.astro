@@ -1,5 +1,5 @@
 ---
-import { Icon } from 'astro-icon/components';
+import lucide from '@iconify-json/lucide/icons.json';
 import anSvg from '../assets/an.svg?raw';
 import newsreader400 from '@fontsource/newsreader/files/newsreader-latin-400-normal.woff2?url';
 import '../styles/global.css';
@@ -26,14 +26,19 @@ const an = anSvg
   // width/height keep it header-sized in any frame painted before the stylesheet applies; the class overrides them
   .replace('<svg', '<svg aria-hidden="true" width="87" height="42" class="block h-(--header-mark) w-auto"');
 
+// Lucide icon as the mask of an .icon-wash: SVG strokes can't use background-clip, so the gradient shows through the icon
+type LucideName = keyof typeof lucide.icons;
+const maskIcon = (name: LucideName) =>
+  `--icon: url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">${lucide.icons[name].body}</svg>`)}")`;
+
 const focusRing = 'rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-selected';
 
 const socials = [
-  { label: 'LinkedIn', icon: 'lucide:linkedin', href: 'https://www.linkedin.com/in/rcen/' },
+  { label: 'LinkedIn', icon: 'linkedin', href: 'https://www.linkedin.com/in/rcen/' },
   // Spam protection: the address is never in the HTML. The footer script joins the parts.
-  { label: 'Email', icon: 'lucide:mail', email: { user: 'contact', domain: 'rcen.dev' } },
-  { label: 'GitHub', icon: 'lucide:github', href: 'https://github.com/raymondcen' },
-];
+  { label: 'Email', icon: 'mail', email: { user: 'contact', domain: 'rcen.dev' } },
+  { label: 'GitHub', icon: 'github', href: 'https://github.com/raymondcen' },
+] satisfies { label: string; icon: LucideName; href?: string; email?: { user: string; domain: string } }[];
 ---
 
 <html lang="en">
@@ -62,9 +67,9 @@ const socials = [
       {isHome ? (
         <span title='"blessed peace"' class="justify-self-start select-none pr-4 text-selected sm:pr-0" set:html={an} />
       ) : (
-        <a href="/" class={`wash group flex items-center gap-1 justify-self-start pr-4 text-lg leading-none sm:pr-0 sm:text-2xl ${focusRing}`}>
+        <a href="/" class={`wash flex items-center gap-1 justify-self-start pr-4 text-lg leading-none sm:pr-0 sm:text-2xl ${focusRing}`}>
           {/* Negative margins trim the empty side padding in the chevron's 24-unit viewBox */}
-          <Icon name="lucide:chevron-left" class="-mx-2 size-(--header-back) text-ink group-hover:text-selected group-focus-visible:text-selected" aria-hidden="true" />
+          <span class="icon-wash -mx-2 size-(--header-back)" style={maskIcon('chevron-left')} aria-hidden="true"></span>
           Back
         </a>
       )}
@@ -82,7 +87,7 @@ const socials = [
           if (email) return (
             <li hidden data-email-user={email.user} data-email-domain={email.domain}>
               <a aria-label={label} class={`block ${focusRing}`}>
-                <Icon name={icon} class="size-6" aria-hidden="true" />
+                <span class="icon-wash size-6" style={maskIcon(icon)} aria-hidden="true"></span>
               </a>
             </li>
           );
@@ -96,7 +101,7 @@ const socials = [
                 rel={external ? 'noopener noreferrer' : undefined}
                 class={`block ${focusRing}`}
               >
-                <Icon name={icon} class="size-6" aria-hidden="true" />
+                <span class="icon-wash size-6" style={maskIcon(icon)} aria-hidden="true"></span>
               </a>
             </li>
           );
@@ -111,6 +116,16 @@ const socials = [
         const washObserver = new ResizeObserver((entries) => {
           for (const { target, borderBoxSize: [box] } of entries) {
             target.style.setProperty('--wash-size', Math.round(box.inlineSize + box.blockSize));
+            // An icon inside the link (the Back chevron) paints the link's gradient at its own offset, so one edge crosses both
+            const icon = target.querySelector('.icon-wash');
+            if (icon) {
+              const link = target.getBoundingClientRect();
+              const { left, top } = icon.getBoundingClientRect();
+              target.style.setProperty('--wash-w', `${link.width}px`);
+              target.style.setProperty('--wash-h', `${link.height}px`);
+              target.style.setProperty('--icon-x', `${left - link.left}px`);
+              target.style.setProperty('--icon-y', `${top - link.top}px`);
+            }
           }
         });
         for (const el of document.querySelectorAll('.wash')) washObserver.observe(el);
