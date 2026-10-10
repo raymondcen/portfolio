@@ -211,6 +211,16 @@ One row on every page, so "Raymond Cen" sits at the same y everywhere. Sizes are
 - No skip link. The header holds at most one link (Back), so keyboard users reach the content in one Tab.
 - Not done yet: in-page anchors and keyboard focus can land under the sticky header. Add `scroll-padding-top: calc(var(--header-row) + 2 * var(--header-pad))` on `html` when the first page with anchors ships.
 
+**Footer**
+One row of icons, centered (`justify-center gap-8`). The padding is a CSS variable in `:root` in `src/styles/global.css`, like the header's:
+
+| Variable | Value | Use |
+|---|---|---|
+| `--footer-pad` | `1rem`, `2rem` from `sm` | Top and bottom padding (`py-(--footer-pad)`) |
+
+- Footer height is `2 x --footer-pad + 24px` icons: 56px below `sm`, 88px from `sm`.
+- The home nav centers in the viewport, not just in main: its bottom padding adds header height minus footer height, computed from both sets of variables. Change the footer padding through `--footer-pad` so the nav stays centered.
+
 **Fonts**
 Self-host Newsreader (Fontsource package), use `font-display: swap` and preload the regular weight. Only weights 400, 500 and 600 are used.
 

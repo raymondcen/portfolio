@@ -25,6 +25,9 @@
   @media (width >= 40rem) { --header-mark: var(--header-row); }
   --header-back: 2.25rem;
   @media (width >= 40rem) { --header-back: 3rem; }
+  /* Footer: height = 2 x pad + the 24px icons */
+  --footer-pad: 1rem;
+  @media (width >= 40rem) { --footer-pad: 2rem; }
   /* Wash speed: time per pixel of element width + height. Lower is faster. */
   --wash-ms-per-px: 1.65ms;
 }
