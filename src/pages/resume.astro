@@ -1,6 +1,6 @@
 ---
-import { Icon } from 'astro-icon/components';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { maskIcon } from '../lib/icons';
 
 const pdf = '/resume.pdf';
 const focusRing = 'focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-selected';
@@ -34,7 +34,7 @@ const openLink = `wash text-lg underline decoration-sub underline-offset-4 round
       download="resume.pdf"
       class={`btn-wash flex shrink-0 items-center gap-2 rounded-full px-5 py-2.5 text-lg leading-none ${focusRing}`}
     >
-      <Icon name="lucide:download" class="size-5" aria-hidden="true" />
+      <span class="size-5 bg-current [mask:var(--icon)_center/contain_no-repeat]" style={maskIcon('download')} aria-hidden="true"></span>
       Download PDF
     </a>
   </div>
