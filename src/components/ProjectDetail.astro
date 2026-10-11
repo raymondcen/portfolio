@@ -19,9 +19,11 @@ const { Content } = await render(project);
 // Eager: lazy images inside hidden blocks don't start loading until shown, so a first click flashed blank
 const thumb = image && (await getImage({ src: image.src, height: 440, loading: 'eager' }));
 // The enlarged image's final size, set before it loads so the popover never collapses to the close button
-const enlarged = image && {
-  width: Math.min(image.src.width, 1600),
-  style: `width: min(90vw, ${Math.min(image.src.width, 1600)}px, calc(90dvh * ${image.src.width / image.src.height})); background-image: url(${thumb!.src});`,
+// Reads size from getImage's plain clone: any property read on the imported image marks the original for emission to dist
+const original = thumb && (thumb.options.src as ImageMetadata);
+const enlarged = original && {
+  width: Math.min(original.width, 1600),
+  style: `width: min(90vw, ${Math.min(original.width, 1600)}px, calc(90dvh * ${original.width / original.height})); background-image: url(${thumb!.src});`,
 };
 
 const links = [
