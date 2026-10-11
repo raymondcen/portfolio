@@ -2,8 +2,8 @@
 // Shared detail content for the desktop panel and the mobile accordion.
 // Title and dates live in each layout, since they sit in different places.
 import { Image, getImage } from 'astro:assets';
-import { Icon } from 'astro-icon/components';
 import { render, type CollectionEntry } from 'astro:content';
+import { maskIcon } from '../lib/icons';
 
 interface Props {
   project: CollectionEntry<'projects'>;
@@ -42,9 +42,9 @@ const focusRing = 'rounded-sm focus-visible:outline-2 focus-visible:outline-offs
       type="button"
       popovertarget={popoverId}
       aria-label="Enlarge image"
-      class={`group absolute top-2 right-2 flex size-8 cursor-pointer items-center justify-center rounded-md bg-bg/85 ${focusRing}`}
+      class={`absolute top-2 right-2 flex size-8 cursor-pointer items-center justify-center rounded-md bg-bg/85 ${focusRing}`}
     >
-      <Icon name="lucide:maximize-2" class="size-4 text-ink group-hover:text-selected group-focus-visible:text-selected" aria-hidden="true" />
+      <span class="icon-wash size-4 [--wash-size:32]" style={maskIcon('maximize-2')} aria-hidden="true"></span>
     </button>
     {/* Native popover: opens without JS, closes on Esc or a click outside */}
     <div id={popoverId} popover class="m-auto overflow-visible border-0 bg-transparent p-0 backdrop:bg-ink/70">
@@ -56,9 +56,9 @@ const focusRing = 'rounded-sm focus-visible:outline-2 focus-visible:outline-offs
         popovertargetaction="hide"
         aria-label="Close enlarged image"
         autofocus
-        class={`group absolute top-2 right-2 flex size-8 cursor-pointer items-center justify-center rounded-md bg-bg/85 ${focusRing}`}
+        class={`absolute top-2 right-2 flex size-8 cursor-pointer items-center justify-center rounded-md bg-bg/85 ${focusRing}`}
       >
-        <Icon name="lucide:x" class="size-4 text-ink group-hover:text-selected group-focus-visible:text-selected" aria-hidden="true" />
+        <span class="icon-wash size-4 [--wash-size:32]" style={maskIcon('x')} aria-hidden="true"></span>
       </button>
     </div>
   </div>
@@ -83,10 +83,11 @@ const focusRing = 'rounded-sm focus-visible:outline-2 focus-visible:outline-offs
           target="_blank"
           rel="noopener noreferrer"
           aria-label={`${label} (opens in new tab)`}
-          class={`group inline-flex items-center gap-1 ${focusRing}`}
+          class={`wash inline-flex items-center gap-1 ${focusRing}`}
         >
-          <span class="wash">{label}</span>
-          <Icon name="lucide:arrow-up-right" class="size-4 text-ink group-hover:text-selected group-focus-visible:text-selected" aria-hidden="true" />
+          {/* Like Back: the link is the .wash, so one edge crosses the label and then the arrow */}
+          {label}
+          <span class="icon-wash size-4" style={maskIcon('arrow-up-right')} aria-hidden="true"></span>
         </a>
       </li>
     ))}

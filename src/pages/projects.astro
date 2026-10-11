@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ProjectDetail from '../components/ProjectDetail.astro';
 import { dates } from '../lib/dates';
+import { maskIcon } from '../lib/icons';
 
 const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
 
@@ -66,7 +67,7 @@ const focusRing = 'focus-visible:outline-2 focus-visible:outline-offset-4 focus-
               <span class="text-[13px] text-sub italic">{dates(project.data)}</span>
               <span class="text-sm leading-[1.4] text-sub">{project.data.summary}</span>
             </span>
-            <span class="chevron" aria-hidden="true"></span>
+            <span class="icon-wash mt-0.5 size-6 shrink-0" style={maskIcon('chevron-down')} aria-hidden="true"></span>
           </summary>
           <div class="flex flex-col gap-4 pb-6">
             <ProjectDetail project={project} layout="mobile" />
@@ -172,47 +173,27 @@ const focusRing = 'focus-visible:outline-2 focus-visible:outline-offset-4 focus-
     background-image: none; /* not the shorthand: it would reset background-position and replay the sweep on deselect */
     color: var(--color-selected);
   }
-  /* The chevron's color is its masked background, so fill it solid instead */
-  details[open] > summary .chevron {
+  /* The chevron (.icon-wash, swept from the summary by global.css) is its masked background, so fill it solid
+     and flip it */
+  details[open] > summary > .icon-wash {
     background-image: none;
     background-color: var(--color-selected);
+    rotate: 180deg;
   }
 
-  /* Hovering anywhere on a row or summary sweeps its title and chevron */
+  /* Hovering anywhere on a row or summary sweeps its title */
   @media (hover: hover) {
     button:hover .wash,
-    summary:hover .wash,
-    summary:hover .chevron {
+    summary:hover .wash {
       background-position: 0 100%;
     }
   }
   button:focus-visible .wash,
-  summary:focus-visible .wash,
-  summary:focus-visible .chevron {
+  summary:focus-visible .wash {
     background-position: 0 100%;
   }
 
   summary::-webkit-details-marker {
     display: none;
-  }
-
-  /* Chevron wash: the gradient fills the box and the icon is its mask, since SVG strokes can't use background-clip */
-  .chevron {
-    flex-shrink: 0;
-    width: 1.5rem;
-    height: 1.5rem;
-    margin-top: 0.125rem;
-    background-image: linear-gradient(45deg, var(--color-selected) 50%, var(--color-ink) 50%);
-    background-size: 200% 200%;
-    background-position: 100% 0;
-    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") center / contain no-repeat;
-    /* Fixed 24 x 24 box, so its wash size is a constant 48 */
-    transition: background-position calc(48 * var(--wash-ms-per-px)) linear, rotate 200ms ease-out;
-  }
-  details[open] .chevron {
-    rotate: 180deg;
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .chevron { transition: none; }
   }
 </style>

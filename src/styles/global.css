@@ -56,10 +56,11 @@ html {
   .wash { transition: none; }
 }
 
-/* Icon wash: the gradient fills the box and the icon (--icon, set by BaseLayout) is its mask, since SVG strokes
-   can't use background-clip. The parent link triggers it. The registered --wash-p (0 at rest, 1 swept) is what
-   transitions; background-position is computed from it. Footer icons are a fixed 24 x 24 box, so their wash size
-   is a constant 48. */
+/* Icon wash: the gradient fills the box and the icon (--icon, from maskIcon in src/lib/icons.ts) is its mask, since
+   SVG strokes can't use background-clip. The parent link, button or summary triggers it. The registered --wash-p
+   (0 at rest, 1 swept) is what transitions; background-position is computed from it. Icons are fixed boxes, so
+   --wash-size is a constant: 48 for 24 x 24 (the default), set 32 on 16 x 16 icons. rotate is listed for the
+   Projects accordion chevron, which flips when open. */
 @property --wash-p {
   syntax: "<number>";
   inherits: false;
@@ -71,17 +72,17 @@ html {
   background-size: 200% 200%;
   background-position: calc((1 - var(--wash-p)) * 100%) calc(var(--wash-p) * 100%);
   mask: var(--icon) center / contain no-repeat;
-  transition: --wash-p calc(48 * var(--wash-ms-per-px)) linear;
+  transition: --wash-p calc(var(--wash-size, 48) * var(--wash-ms-per-px)) linear, rotate 200ms ease-out;
 }
 @media (hover: hover) {
-  a:hover > .icon-wash { --wash-p: 1; }
+  :is(a, button, summary):hover > .icon-wash { --wash-p: 1; }
 }
-a:focus-visible > .icon-wash { --wash-p: 1; }
+:is(a, button, summary):focus-visible > .icon-wash { --wash-p: 1; }
 @media (prefers-reduced-motion: reduce) {
   .icon-wash { transition: none; }
 }
 
-/* Icon inside a .wash link (the Back chevron): paint the link's gradient at the icon's offset in the link, with the
+/* Icon inside a .wash link (the Back chevron, project link arrows): paint the link's gradient at the icon's offset in the link, with the
    link's duration, so one edge crosses the chevron and then the text. BaseLayout's script measures --wash-w, --wash-h,
    --icon-x and --icon-y; without JS the fallbacks reduce it to the icon's own sweep. Because only --wash-p
    transitions, a new measurement (font load, resize) applies at once instead of sweeping at rest. */
