@@ -88,15 +88,18 @@ Layout
 List panel
 - 8px padding. One row per project, ordered by the display order field.
 - Each row is a real `<button>` with `aria-current` on the selected row. Minimum height 44px, padding 14px 16px, radius 6px.
-- Row content: title (18px, 600) and dates (13px, `sub` `#64635E`) on one line that wraps when narrow, so the date drops below the title. Summary below (14px, `sub`, line-height 1.4).
+- Row content, stacked: title (18px, 600), dates below it (13px, `sub` `#64635E`, italic), then summary (14px, `sub`, line-height 1.4).
 - Selected row: background `panel-2` `#DEDDD7` and title in `selected` `#006930`. Unselected rows use the `.wash` hover on the title.
 - The selected title holds the wash at its green end (`background-position: 0 100%`). When another row is selected, the previous title runs the wash in reverse: ink sweeps back in from the top right to the bottom left, at the same constant speed. Reduced motion: it turns ink instantly.
-- With JS the `panel-2` background is one highlight behind the rows that slides and resizes to the newly selected row (600ms ease-out). It is placed instantly on load and on resize. Reduced motion: it moves instantly. Without JS each selected button keeps its own background.
+- With JS the `panel-2` background is one highlight behind the rows that slides and resizes to the newly selected row (400ms ease-out). It is placed instantly on load and on resize. Reduced motion: it moves instantly. Without JS each selected button keeps its own background.
 - The first project is selected on load.
 
 Detail panel
 - 28px 32px padding, flex column, 16px gap. All children `flex-shrink: 0`.
-- Same section order for every project, skipping empty fields: title (32px, 600; plays the wash sweep to `selected` `#006930` each time the project is shown and stays green, instant green under reduced motion) with dates right-aligned (15px, `sub`) and wrapping when narrow, image slot (220px tall, `panel-2`, only when the project has an image), description (17px, line-height 1.6, max-width 68ch), role bullets, metric line (16px, 600), tag pills (13px, `sub` on `bg` `#F7F6F0`, fully rounded, wrapping), "View on GitHub" link with external-link arrow.
+- Same section order for every project, skipping empty fields: title (32px, 600; plays the wash sweep to `selected` `#006930` each time the project is shown and stays green, instant green under reduced motion) with dates below it (15px, `sub`, italic), image, description (17px, line-height 1.6, max-width 68ch), role bullets, metric line (16px, 600), tag pills (13px, `sub` on `bg` `#F7F6F0`, fully rounded, wrapping), links.
+- Image: shown at its natural aspect ratio, at most 220px tall and the panel's width, radius 6px, no background box. Projects without an image skip it entirely. The thumbnail loads eagerly so the first click on a project never shows a blank image.
+- Enlarge: a 32px button (`bg` at 85%, radius 6px, 16px `maximize-2` icon with the wash, `aria-label="Enlarge image"`) sits 8px in from the image's top right corner. It opens a native `popover`, so it works without JS. The popover shows the image centered at up to 90vw, 90dvh and its natural width (capped at 1600px) over an `ink` backdrop at 70%. The thumbnail fills the box as a background until the full image loads. A matching close button (`x` icon, `aria-label="Close enlarged image"`) sits on its top right corner and gets focus when the popover opens. Esc, a click outside or the close button closes it, and focus returns to the enlarge button.
+- Links: a wrapping row (24px column gap, 8px row gap) in this order, each only when the project has that field: "View on GitHub" (`github`), "View on Devpost" (`devpost`), "Watch video" (`video`), "Visit live site" (`live`). Each opens in a new tab (`rel="noopener noreferrer"`, `aria-label` ends with "(opens in new tab)") and ends with a 16px `arrow-up-right` icon. The link is the `.wash`, so one edge sweeps across the label and then the arrow. No row when a project has no links.
 - The panel keeps a fixed shape. It never resizes to fit content.
 - `tabindex="0"` and `aria-label="Project details"` so keyboard users can scroll it.
 - Reset `scrollTop` to 0 when the selected project changes.
