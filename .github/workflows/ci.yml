@@ -15,3 +15,4 @@ jobs:
       - run: npm ci
       - run: npx astro check
       - run: npm run build
+      - run: npx --yes @lhci/cli@0.15.x autorun
