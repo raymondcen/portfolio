@@ -25,7 +25,7 @@ const arrow = `arrow absolute top-1/2 flex h-22 w-10 -translate-y-1/2 cursor-poi
       ) : (
         <div
           data-track
-          class={`track flex aspect-[4/5] snap-x snap-mandatory overflow-x-auto rounded-[10px] ${focusRing}`}
+          class={`track flex aspect-[4/5] snap-x bg-panel-2 snap-mandatory overflow-x-auto rounded-[10px] ${focusRing}`}
           {...carousel && { role: 'region', tabindex: '0', 'aria-roledescription': 'carousel', 'aria-label': 'Photos' }}
         >
           {photos.map((photo, i) => (
@@ -39,6 +39,7 @@ const arrow = `arrow absolute top-1/2 flex h-22 w-10 -translate-y-1/2 cursor-poi
                 widths={[432, 864, 1296, 1728]}
                 sizes="(min-width: 900px) 432px, calc(100vw - 32px)"
                 loading={i === 0 ? 'eager' : 'lazy'}
+                {...i === 0 && { decoding: 'sync', fetchpriority: 'high' }}
                 class="size-full object-cover"
               />
             </div>
