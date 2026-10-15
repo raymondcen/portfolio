@@ -18,6 +18,9 @@ const { Content } = await render(project);
 // Same options as the inline <Image>, so this resolves to the thumbnail the page already loaded
 // Eager: lazy images inside hidden blocks don't start loading until shown, so a first click flashed blank
 const thumb = image && (await getImage({ src: image.src, height: 440, loading: 'eager' }));
+// Display size in the attributes, at most 220px tall, so the slot holds its space before the image loads
+const thumbHeight = thumb && Math.min(220, thumb.attributes.height);
+const thumbAttrs = thumb && { ...thumb.attributes, height: thumbHeight, width: Math.round((thumb.attributes.width * thumbHeight!) / thumb.attributes.height) };
 // The enlarged image's final size, set before it loads so the popover never collapses to the close button
 // Reads size from getImage's plain clone: any property read on the imported image marks the original for emission to dist
 const original = thumb && (thumb.options.src as ImageMetadata);
@@ -39,7 +42,7 @@ const focusRing = 'rounded-sm focus-visible:outline-2 focus-visible:outline-offs
 {image && (
   <div class="relative w-fit max-w-full shrink-0">
     {/* Natural aspect ratio, no box: the wrapper shrinks to the image so the button sits on its corner */}
-    <img src={thumb!.src} {...thumb!.attributes} decoding="sync" alt={image.alt} class="block h-auto max-h-[220px] w-auto max-w-full rounded-md bg-panel-2" />
+    <img src={thumb!.src} {...thumbAttrs} decoding="sync" alt={image.alt} class="block h-auto max-w-full rounded-md bg-panel-2" />
     <button
       type="button"
       popovertarget={popoverId}
