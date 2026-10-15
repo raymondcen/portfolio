@@ -148,14 +148,15 @@ const arrow = `arrow absolute top-1/2 flex h-22 w-10 -translate-y-1/2 cursor-poi
     background: var(--color-selected);
   }
 
-  /* Arrows: desktop with hover only, shown while the pointer is over the photo or the carousel has focus */
+  /* Arrows: desktop with hover only, shown while the pointer is over the photo or the carousel has keyboard focus.
+     :focus-visible, not :focus-within: a clicked arrow or dot keeps focus, which would hold the arrows after the pointer leaves */
   .arrow {
     opacity: 0;
     pointer-events: none;
     transition: opacity 180ms ease-out;
   }
   [data-carousel]:hover .arrow,
-  [data-carousel]:focus-within .arrow {
+  [data-carousel]:has(:focus-visible) .arrow {
     opacity: 1;
     pointer-events: auto;
   }

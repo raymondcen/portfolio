@@ -217,7 +217,7 @@ Arrows
 - Desktop (≥ 900px) with `hover: hover` only. Not rendered on touch-only devices or below 900px.
 - Two `<button>`s, "Previous photo" and "Next photo", 8px in from the left and right edges, vertically centered. Box 40 x 88, radius 6px, `bg` at 60%, no border.
 - Chevron 22 x 40, `ink`, stroke 2.25, round caps, with the `.icon-wash` hover (`--wash-size: 62`). It is `tallChevron` in `src/lib/icons.ts`, a 22 x 40 path, since stretching Lucide's square chevron would distort the stroke.
-- Hidden by default (opacity 0, `pointer-events: none`). They fade in over 180ms ease-out while the pointer is over the photo or the carousel has focus (`:hover` / `:focus-within`, CSS only) and fade out on leave. Instant under reduced motion.
+- Hidden by default (opacity 0, `pointer-events: none`). They fade in over 180ms ease-out while the pointer is over the photo or the carousel has keyboard focus (`:hover` / `:has(:focus-visible)`, CSS only) and fade out on leave. Not `:focus-within`: a clicked arrow or dot keeps focus and would hold the arrows after the pointer leaves. Instant under reduced motion.
 - No wrap-around: Previous is hidden on the first photo and Next on the last. If the hidden arrow had focus, focus moves to the track.
 
 Script
