@@ -199,7 +199,7 @@ Layout
 - Keep clear space around both boxes. A future background animation must never overlap them, the header or the footer. It is not built.
 
 Carousel
-- The track is a horizontal scroller with `scroll-snap-type: x mandatory` and a hidden scrollbar. One slide per photo, each 100% wide, 4:5, `object-fit: cover`, radius 10px. The frame shows exactly one photo with no preview of the next and no multi-image badge. Touch swipe and trackpad scroll are native scrolling. No auto-advance.
+- The track is a horizontal scroller with `scroll-snap-type: x mandatory` and a hidden scrollbar. One slide per photo, each 100% wide, 4:5, `object-fit: cover`, with square corners. The track itself has the 10px radius and clips the slides, so the rounded frame stays still and only the photos move. The frame shows exactly one photo with no preview of the next and no multi-image badge. Touch swipe and trackpad scroll are native scrolling. No auto-advance.
 - Images use Astro `<Image>` with widths 432, 864, 1296 and 1728 and `sizes="(min-width: 900px) 432px, calc(100vw - 32px)"`, covering 432px desktop and full-width mobile at 1x and 2x. The first photo is eager, the rest lazy.
 - Semantics: the track is the region (`role="region"`, `tabindex="0"`, `aria-roledescription="carousel"`, `aria-label="Photos"`) with the site's 2px `selected` focus ring. Each slide is a group with `aria-roledescription="slide"` and `aria-label="N of M"`.
 - Keyboard: Left and Right move one photo while the track has focus. The listener is on the track, not the window.
