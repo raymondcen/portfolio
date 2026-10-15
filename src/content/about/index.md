@@ -1,0 +1,5 @@
+---
+photos: []
+---
+
+Hi, my name is Raymond! I'm a senior at Oregon State studying Computer Science with a focus in data science. I'm most excited about building and training machine learning models and digging into data to see what it actually shows. Outside of class, you'll find me lifting most evenings or out hiking with friends. The rest of the time, I'm usually looking for new music I like or reading manga.

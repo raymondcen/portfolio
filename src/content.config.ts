@@ -66,4 +66,13 @@ const experience = defineCollection({
     .refine(endNotBeforeStart, endError),
 });
 
-export const collections = { projects, experience };
+// One entry, index.md. The body is the bio. Photos live in src/assets/about/ and show in array order.
+const about = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/about' }),
+  schema: ({ image }) =>
+    z.object({
+      photos: z.array(z.object({ src: image(), alt: z.string().min(1).optional() })).default([]),
+    }),
+});
+
+export const collections = { projects, experience, about };

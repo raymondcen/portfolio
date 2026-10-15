@@ -1,7 +1,180 @@
 ---
+import { Image } from 'astro:assets';
+import { getEntry, render } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { tallChevron } from '../lib/icons';
+
+const about = (await getEntry('about', 'index'))!;
+const { Content } = await render(about);
+const { photos } = about.data;
+const count = photos.length;
+// One photo is a plain image: no dots, arrows, carousel semantics or script
+const carousel = count > 1;
+
+const focusRing = 'focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-selected';
+const arrow = `arrow absolute top-1/2 flex h-22 w-10 -translate-y-1/2 cursor-pointer items-center justify-center rounded-md bg-bg/60 ${focusRing}`;
 ---
 
 <BaseLayout title="About | Raymond Cen" description="[About meta description]">
-  <p>Raymond Cen. Site in progress.</p>
+  <h1 class="sr-only">About</h1>
+
+  <div class="mx-auto flex max-w-[1120px] flex-col gap-4 px-4 pb-4 min-[900px]:flex-row min-[900px]:gap-6 min-[900px]:px-8 min-[900px]:py-2">
+    <div data-carousel class="relative min-w-0 min-[900px]:flex-[0_1_432px]">
+      {count === 0 ? (
+        <div class="flex aspect-[4/5] items-center justify-center rounded-[10px] bg-panel-2 text-sub">[Photos to come]</div>
+      ) : (
+        <div
+          data-track
+          class={`track flex aspect-[4/5] snap-x snap-mandatory overflow-x-auto rounded-[10px] ${focusRing}`}
+          {...carousel && { role: 'region', tabindex: '0', 'aria-roledescription': 'carousel', 'aria-label': 'Photos' }}
+        >
+          {photos.map((photo, i) => (
+            <div
+              class="w-full shrink-0 snap-start"
+              {...carousel && { role: 'group', 'aria-roledescription': 'slide', 'aria-label': `${i + 1} of ${count}` }}
+            >
+              <Image
+                src={photo.src}
+                alt={photo.alt ?? `Photo ${i + 1} of ${count}`}
+                widths={[432, 864, 1296, 1728]}
+                sizes="(min-width: 900px) 432px, calc(100vw - 32px)"
+                loading={i === 0 ? 'eager' : 'lazy'}
+                class="size-full rounded-[10px] object-cover"
+              />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {carousel && (
+        <>
+          {/* Hidden until the script runs: without JS the photos still swipe and scroll natively */}
+          <div data-dots hidden class="absolute bottom-2 left-1/2 flex -translate-x-1/2">
+            {photos.map((_, i) => (
+              <button type="button" data-dot aria-label={`Go to photo ${i + 1}`} class="dot flex cursor-pointer items-center justify-center rounded-sm focus-visible:outline-2 focus-visible:outline-selected">
+                <span class="block rounded-full"></span>
+              </button>
+            ))}
+          </div>
+          <button type="button" data-arrow hidden aria-label="Previous photo" class={`${arrow} left-2`}>
+            <span class="icon-wash h-10 w-[22px] [--wash-size:62]" style={tallChevron.left} aria-hidden="true"></span>
+          </button>
+          <button type="button" data-arrow hidden aria-label="Next photo" class={`${arrow} right-2`}>
+            <span class="icon-wash h-10 w-[22px] [--wash-size:62]" style={tallChevron.right} aria-hidden="true"></span>
+          </button>
+        </>
+      )}
+    </div>
+
+    <div class="bio flex flex-col gap-4 rounded-[10px] bg-panel px-4 pt-4 pb-5 leading-[1.6] min-[900px]:flex-[1_1_560px] min-[900px]:px-8 min-[900px]:py-7 min-[900px]:text-lg min-[900px]:leading-[1.65]">
+      <Content />
+    </div>
+  </div>
+
+  {carousel && (
+    <script is:inline>
+      {
+        const root = document.querySelector('[data-carousel]');
+        const track = root.querySelector('[data-track]');
+        const dots = [...root.querySelectorAll('[data-dot]')];
+        const [prev, next] = root.querySelectorAll('[data-arrow]');
+        const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+        const last = dots.length - 1;
+        let active = 0;
+
+        function show(i) {
+          active = i;
+          // At most 5 dots, centered on the active one and pinned at both ends
+          const start = Math.max(0, Math.min(i - 2, dots.length - 5));
+          dots.forEach((dot, j) => {
+            dot.hidden = j < start || j >= start + 5;
+            dot.style.setProperty('--d', Math.abs(j - i) <= 1 ? '8px' : '5px');
+            if (j === i) dot.setAttribute('aria-current', 'true');
+            else dot.removeAttribute('aria-current');
+          });
+          // No wrap-around: hide Previous on the first photo and Next on the last
+          for (const [button, end] of [[prev, i === 0], [next, i === last]]) {
+            if (end && document.activeElement === button) track.focus();
+            button.hidden = end;
+          }
+        }
+
+        const go = (i) =>
+          track.scrollTo({ left: Math.max(0, Math.min(i, last)) * track.clientWidth, behavior: reduce.matches ? 'auto' : 'smooth' });
+
+        track.addEventListener('scroll', () => {
+          const i = Math.round(track.scrollLeft / track.clientWidth);
+          if (i !== active) show(i);
+        }, { passive: true });
+        track.addEventListener('keydown', (e) => {
+          if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+          e.preventDefault();
+          go(active + (e.key === 'ArrowLeft' ? -1 : 1));
+        });
+        prev.addEventListener('click', () => go(active - 1));
+        next.addEventListener('click', () => go(active + 1));
+        dots.forEach((dot, j) => dot.addEventListener('click', () => go(j)));
+
+        show(0);
+        root.querySelector('[data-dots]').hidden = false;
+      }
+    </script>
+  )}
 </BaseLayout>
+
+<style>
+  .track {
+    scrollbar-width: none;
+  }
+  .track::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hit area 14 x 24 centered on the dot. Margins keep a 6px gap between dots: (dot + 6 - 14) / 2 per side */
+  .dot {
+    --d: 5px;
+    width: 14px;
+    height: 24px;
+    margin-inline: calc(var(--d) / 2 - 4px);
+    transition: margin 150ms;
+  }
+  .dot > span {
+    width: var(--d);
+    height: var(--d);
+    background: #FFFFFF;
+    transition: width 150ms, height 150ms;
+  }
+  .dot[aria-current='true'] > span {
+    background: var(--color-selected);
+  }
+
+  /* Arrows: desktop with hover only, shown while the pointer is over the photo or the carousel has focus */
+  .arrow {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 180ms ease-out;
+  }
+  [data-carousel]:hover .arrow,
+  [data-carousel]:focus-within .arrow {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  @media not ((hover: hover) and (min-width: 900px)) {
+    .arrow { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dot, .dot > span, .arrow { transition: none; }
+  }
+
+  /* Desktop: the bio matches the photo's top and height. Size containment drops its content height,
+     so the row's height comes from the photo and the bio stretches to it, scrolling if the text ever outgrows it */
+  @media (min-width: 900px) {
+    .bio {
+      contain: size;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #B9B8B3 transparent;
+    }
+  }
+</style>

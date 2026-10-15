@@ -14,7 +14,7 @@ The original plan described a single-page landing. The wireframes replace it.
 | Featured cards plus "More projects" | All projects in one list: split view (list plus detail panel) on desktop, accordion on mobile |
 | `/projects/[slug]` case study pages | None. Details open in the detail panel on desktop and expand in place on mobile |
 | Skills and Contact sections | Omitted. Contact is the footer icons |
-| About section on the landing page | Its own `/about` page. Content not decided yet |
+| About section on the landing page | Its own `/about` page: split view with a photo carousel on the left and the bio panel on the right, one column below 900px |
 | Plain color fade on hover | Diagonal color wash on every hover |
 | Cloudflare Pages | Cloudflare Workers (static assets) |
 | Novak Lab capstone listed under Experience | Capstone on Projects only; Experience lists paid work |
@@ -29,11 +29,11 @@ Sitemap: `/`, `/experience`, `/projects`, `/resume`, `/about`, `/resume.pdf`, `/
 
 | Tool | Role in this site |
 |---|---|
-| **Astro** | Site framework. Builds every page to static HTML at build time. One `.astro` file per route: `index`, `experience`, `projects`, `resume`, `about`, `404`. About is a plain Markdown-driven page, so its text can be edited without touching layout code. A shared `BaseLayout` holds the sticky header, footer icons, fonts and meta tags. Ships zero JavaScript unless a component opts in. The exceptions are the Projects desktop selection island and the footer email script (section 4). The mobile accordion is native HTML. |
+| **Astro** | Site framework. Builds every page to static HTML at build time. One `.astro` file per route: `index`, `experience`, `projects`, `resume`, `about`, `404`. About is driven by a Markdown collection entry (`src/content/about/index.md`), so its bio and photos can be edited without touching layout code. A shared `BaseLayout` holds the sticky header, footer icons, fonts and meta tags. Ships zero JavaScript unless a component opts in. The exceptions are the Projects desktop selection island, the footer email script and the About carousel island (section 4). The mobile accordion is native HTML. |
 | **Tailwind CSS** | All styling. Design tokens from section 3 go in the Tailwind theme (`bg`, `selected`, `ink`, `sub`, `panel`, `panel-2`, `divider`) so classes read `text-ink hover:text-selected`. Name the body text color `ink` in Tailwind: `text-base` is already Tailwind's default font-size class and would collide. The wash animation lives in one small custom CSS file because it uses gradients and masks Tailwind doesn't cover cleanly. Unused classes are stripped at build. The build inlines all CSS into each page (`build.inlineStylesheets: 'always'`) so back navigation never paints an unstyled frame while a separate stylesheet revalidates. |
-| **Astro Content Collections + Zod** | Projects and experience entries live as Markdown files in `src/content/projects/` and `src/content/experience/`, one file per entry. Schemas live in `src/content.config.ts`; each collection uses the glob loader on `**/*.md`, and the file name is the entry id (`data-slug` on the Projects rows and detail blocks). Projects frontmatter, required: `title`, `start`, `context` (one of `capstone`, `course`, `hackathon`, `personal`), `teamSize` (positive integer, 1 means solo), `summary`, `tags` (at least one), `status` (one of `complete`, `archived`, `in-progress`) and `order`. Optional: `end` (equal to `start` for a single-month project and shown as one date; absent means present), `contextDetail` (course number or event name and length), `teamNote` (nuance the number cannot carry), `role`, `metric` (prefix "Team result:" when it is not solely mine), `github`, `devpost`, `live` and `video` (URLs) and `image` (`{ src, alt }`, alt required whenever an image exists). Experience frontmatter, required: `title` (the role), `organization`, `location`, `start`, `type` (employment type, not displayed), `summary` (one line), `tags` (at least one) and `order`. Optional: `end` (absent means present), `teamSize`, `role` (assigned team role, distinct from the title) and `github`. Dates are quoted `"YYYY-MM"` strings, not Date objects: a parsed Date is UTC midnight and renders as the previous day in Pacific time, and YYYY-MM strings sort correctly as plain strings. An entry whose end is before its start fails. The body holds the expanded text: for projects one description paragraph followed by the role bullets, for experience the bullets. A Zod schema checks every file at build, so a missing title or broken date fails the build instead of shipping. The Projects and Experience pages loop over these collections. Adding a project means adding one file. |
+| **Astro Content Collections + Zod** | Projects and experience entries live as Markdown files in `src/content/projects/` and `src/content/experience/`, one file per entry. Schemas live in `src/content.config.ts`; each collection uses the glob loader on `**/*.md`, and the file name is the entry id (`data-slug` on the Projects rows and detail blocks). Projects frontmatter, required: `title`, `start`, `context` (one of `capstone`, `course`, `hackathon`, `personal`), `teamSize` (positive integer, 1 means solo), `summary`, `tags` (at least one), `status` (one of `complete`, `archived`, `in-progress`) and `order`. Optional: `end` (equal to `start` for a single-month project and shown as one date; absent means present), `contextDetail` (course number or event name and length), `teamNote` (nuance the number cannot carry), `role`, `metric` (prefix "Team result:" when it is not solely mine), `github`, `devpost`, `live` and `video` (URLs) and `image` (`{ src, alt }`, alt required whenever an image exists). Experience frontmatter, required: `title` (the role), `organization`, `location`, `start`, `type` (employment type, not displayed), `summary` (one line), `tags` (at least one) and `order`. Optional: `end` (absent means present), `teamSize`, `role` (assigned team role, distinct from the title) and `github`. Dates are quoted `"YYYY-MM"` strings, not Date objects: a parsed Date is UTC midnight and renders as the previous day in Pacific time, and YYYY-MM strings sort correctly as plain strings. An entry whose end is before its start fails. The `about` collection has one entry, `index.md`: its body is the bio and its frontmatter is `photos`, an array of `{ src, alt }` (`src` an image in `src/assets/about/`, `alt` optional) that defaults to empty. The body holds the expanded text: for projects one description paragraph followed by the role bullets, for experience the bullets. A Zod schema checks every file at build, so a missing title or broken date fails the build instead of shipping. The Projects and Experience pages loop over these collections. Adding a project means adding one file. |
 | **@astrojs/mdx** | Optional now. It was in the plan for case study pages, which were cut. Plain Markdown covers the expanded project text. Add MDX later only if an expanded project needs an embedded component such as a chart. |
-| **@iconify-json/lucide** | Lucide icon data, read at build time. No icon font, no icon integration and no runtime cost. `maskIcon` in `src/lib/icons.ts` turns an icon body into a data URI in `--icon`, used as a CSS mask: washed icons (footer, chevrons, external-link arrow, enlarge and close) paint the wash through it (section 4), and the Download PDF icon paints solid `currentColor` through it. The 嘉安 mark is not a Lucide icon: `BaseLayout` imports `src/assets/an.svg?raw` and inlines it. |
+| **@iconify-json/lucide** | Lucide icon data, read at build time. No icon font, no icon integration and no runtime cost. `maskIcon` in `src/lib/icons.ts` turns an icon body into a data URI in `--icon`, used as a CSS mask: washed icons (footer, chevrons, external-link arrow, enlarge and close, About carousel arrows) paint the wash through it (section 4), and the Download PDF icon paints solid `currentColor` through it. The 嘉安 mark is not a Lucide icon: `BaseLayout` imports `src/assets/an.svg?raw` and inlines it. |
 | **@astrojs/sitemap** | Generates `sitemap.xml` at build from the routes. Paired with a static `robots.txt` in `public/`. Pages are indexable. `/404` passes `noindex` so `BaseLayout` emits `<meta name="robots" content="noindex">` and it stays out of the index. |
 | **Fontsource (Newsreader)** | Self-hosts the Newsreader font from the npm package instead of loading from Google. Import only weights 400, 400 italic (dates), 500 and 600. Faster and no third-party request. |
 
@@ -122,7 +122,7 @@ Behavior
 - The viewport lock does not apply below 900px.
 
 **Diagonal wash animation**
-Every hover color change uses a diagonal wash: green `#006930` sweeps over ink `#171717` at a 45° angle, bottom-left to top-right. Unhovering reverses the sweep. Applies to nav items, Back, footer icons, project titles and chevrons, project links and their arrows, the image enlarge and close icons and the Download PDF fill.
+Every hover color change uses a diagonal wash: green `#006930` sweeps over ink `#171717` at a 45° angle, bottom-left to top-right. Unhovering reverses the sweep. Applies to nav items, Back, footer icons, project titles and chevrons, project links and their arrows, the image enlarge and close icons, the About carousel arrows and the Download PDF fill.
 
 How it works: a 45° linear gradient with a hard color stop (green on the bottom-left half, ink on the top-right half) sits on a background twice the element's size. At rest `background-position: 100% 0` shows ink, with the edge on the bottom-left corner. Hover slides it to `0 100%` so the green half crosses the element and the edge ends on the top-right corner.
 
@@ -151,7 +151,7 @@ Constant speed: the edge moves at the same pixel speed on every element, so shor
 - Text (nav, Back, project titles): the `.wash` pattern above.
 - Download PDF button: same gradient and direction (bottom left to top right) on the button fill without `background-clip: text`; label stays `#F7F6F0`. Its download icon is a `maskIcon` span filled `bg-current`, so it matches the label instead of washing.
 - Icons: SVG strokes can't use `background-clip`. Put the gradient on a wrapper and use the icon as a CSS `mask-image`. Same direction: green enters from the bottom left.
-- Every washed icon is `.icon-wash` in global.css: footer icons, Back chevron, mobile Projects chevron, project link arrows and the image enlarge and close icons. Each is an empty `aria-hidden` span whose mask is the Lucide icon body, read from `@iconify-json/lucide` by `maskIcon` in `src/lib/icons.ts` and turned into a data URI in `--icon`. Hover or keyboard focus of the parent link, button or summary triggers it. Footer icons are a fixed 24 x 24, so the wash size is the default 48.
+- Every washed icon is `.icon-wash` in global.css: footer icons, Back chevron, mobile Projects chevron, project link arrows, the image enlarge and close icons and the About carousel chevrons. Each is an empty `aria-hidden` span whose mask is the Lucide icon body (or the 22 x 40 `tallChevron` path for the About arrows), read from `@iconify-json/lucide` by `maskIcon` in `src/lib/icons.ts` and turned into a data URI in `--icon`. Hover or keyboard focus of the parent link, button or summary triggers it. Footer icons are a fixed 24 x 24, so the wash size is the default 48.
 - Mobile Projects chevron: `.icon-wash` triggered by its `summary`. While its item is open it is solid `selected` and rotated 180°, like the open title.
 - Project link arrows: the link itself is the `.wash`, with the arrow as an `.icon-wash` inside it, the same pattern as Back below. One edge crosses the label and then the arrow. The transition runs on a registered `--wash-p` (0 at rest, 1 swept) and `background-position` is computed from it.
 - Back chevron: the same `.icon-wash`, inside the Back `.wash` link, so one diagonal edge crosses the chevron and then the word. `.wash > .icon-wash` sizes the chevron's gradient to twice the link's box and offsets it by the chevron's position in the link, so it paints the same gradient as the text. The ResizeObserver script measures the link's width and height and the chevron's offset (this includes the `-mx-2` negative margins) into `--wash-w`, `--wash-h`, `--icon-x` and `--icon-y`. The chevron uses the link's `--wash-duration`, so both move at the same speed and finish together. Only `--wash-p` transitions, so a new measurement (font load, resize) applies at once instead of sweeping at rest. Without JS the fallbacks reduce it to the chevron's own sweep.
@@ -178,6 +178,51 @@ The Novak Lab capstone is shown under Projects only, not Experience.
 - Then the one-line `summary` (17px, line-height 1.6, max-width 68ch), the body bullets styled like the Projects role bullets and tag pills identical to Projects.
 - `type` is not displayed.
 - Nothing on the page is interactive: no hover effects and no JS.
+
+**About**
+docs/About wireframe.pdf is the layout reference and supersedes the About frames in docs/wireframe.pdf. The page has two boxes and nothing else: a photo carousel and the bio panel.
+
+Content
+- `src/content/about/index.md`. The Markdown body is the bio. `photos` in frontmatter lists the images in display order; files go in `src/assets/about/`.
+- Everything count-based comes from `photos.length`: slides, dots, slide labels and arrow end states. Nothing assumes a fixed count.
+- A photo without `alt` gets "Photo N of M".
+- 0 photos: one 4:5 `panel-2` box, radius 10px, with "[Photos to come]" centered in `sub`. No dots, arrows, carousel semantics or script.
+- 1 photo: the image alone. No dots, arrows, carousel semantics or script.
+- Meta description is still the `[About meta description]` placeholder.
+
+Layout
+- Same header, footer and Back link as the other pages. No `lockViewport`: the page scrolls like Experience.
+- Desktop (≥ 900px): container `mx-auto max-w-[1120px] px-8 py-2`, row with a 24px gap. Image column `flex: 0 1 432px; min-width: 0`, aspect ratio 4:5. Bio panel `flex: 1 1 560px`. Both shrink in proportion to their basis, so the bio is always wider than the image. At 1440 the image is 432 x 540 and the bio 600 wide.
+- The bio panel's top and height match the image. It has `contain: size`, so its text never sets the row height, and it stretches to the image column. If the text ever outgrows it, the panel scrolls (`overflow-y: auto`, thin scrollbar like Projects).
+- Bio panel: `panel` background, radius 10px, padding 28px 32px, 18px text, line-height 1.65, `ink`. Mobile: padding 16px 16px 20px, 16px text, line-height 1.6.
+- Mobile (< 900px): `px-4 pb-4`, one column with a 16px gap: carousel at full width, bio below at its natural height.
+- Keep clear space around both boxes. A future background animation must never overlap them, the header or the footer. It is not built.
+
+Carousel
+- The track is a horizontal scroller with `scroll-snap-type: x mandatory` and a hidden scrollbar. One slide per photo, each 100% wide, 4:5, `object-fit: cover`, radius 10px. The frame shows exactly one photo with no preview of the next and no multi-image badge. Touch swipe and trackpad scroll are native scrolling. No auto-advance.
+- Images use Astro `<Image>` with widths 432, 864, 1296 and 1728 and `sizes="(min-width: 900px) 432px, calc(100vw - 32px)"`, covering 432px desktop and full-width mobile at 1x and 2x. The first photo is eager, the rest lazy.
+- Semantics: the track is the region (`role="region"`, `tabindex="0"`, `aria-roledescription="carousel"`, `aria-label="Photos"`) with the site's 2px `selected` focus ring. Each slide is a group with `aria-roledescription="slide"` and `aria-label="N of M"`.
+- Keyboard: Left and Right move one photo while the track has focus. The listener is on the track, not the window.
+- A swipe, arrow click, arrow key or dot click moves to that photo and updates the active dot.
+
+Dots
+- One `<button>` per photo, overlaid bottom center with no container behind them. Always visible, not tied to hover. Hidden with one photo.
+- At most 5 visible. The window centers on the active photo: `start = clamp(active - 2, 0, count - 5)`, so it pins at the first and last photos.
+- The active dot and its direct neighbors are 8px; the other visible dots are 5px. Gap 6px. The 8px dots sit 16px above the image's bottom edge.
+- Active: solid `selected` `#006930`. Others: solid `#FFFFFF`. No border, outline or shadow.
+- Size changes animate over 150ms, instant under reduced motion.
+- `aria-label="Go to photo N"`, `aria-current="true"` on the active one. Each hit area is 14 x 24 centered on its dot. Negative margins keep the 6px visual gap, so the hit areas of two 5px neighbors overlap by 3px. 44px would overlap far more; the arrow keys are the keyboard path.
+
+Arrows
+- Desktop (≥ 900px) with `hover: hover` only. Not rendered on touch-only devices or below 900px.
+- Two `<button>`s, "Previous photo" and "Next photo", 8px in from the left and right edges, vertically centered. Box 40 x 88, radius 6px, `bg` at 60%, no border.
+- Chevron 22 x 40, `ink`, stroke 2.25, round caps, with the `.icon-wash` hover (`--wash-size: 62`). It is `tallChevron` in `src/lib/icons.ts`, a 22 x 40 path, since stretching Lucide's square chevron would distort the stroke.
+- Hidden by default (opacity 0, `pointer-events: none`). They fade in over 180ms ease-out while the pointer is over the photo or the carousel has focus (`:hover` / `:focus-within`, CSS only) and fade out on leave. Instant under reduced motion.
+- No wrap-around: Previous is hidden on the first photo and Next on the last. If the hidden arrow had focus, focus moves to the track.
+
+Script
+- One inline island in `about.astro`, rendered only with 2 or more photos. It tracks the active index from the track's scroll position, updates the dot window, sizes and `aria-current` and the arrow end states, and wires arrows, dots and keys to `scrollTo`: `smooth`, or `auto` under reduced motion.
+- Without JS the photos still swipe and scroll, and the dots and arrows stay `hidden`.
 
 **Resume**
 The file is `public/resume.pdf`. The page shows the PDF and a Download PDF button (`download="resume.pdf"`). No visible heading so the PDF gets the height; a screen-reader-only `<h1>Resume</h1>` keeps the page outline.

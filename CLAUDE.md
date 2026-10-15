@@ -18,8 +18,8 @@ If a request conflicts with these, say so before changing anything.
 ## Structure
 - Routes: index, experience, projects, resume, about, 404. Don't add others.
 - Shared shell: src/layouts/BaseLayout.astro (sticky header, footer icons, fonts, meta)
-- Content: src/content/projects/ and src/content/experience/, one .md per entry, schemas in src/content.config.ts
-- Images: src/assets/ so Astro optimizes them
+- Content: src/content/projects/ and src/content/experience/, one .md per entry, and src/content/about/index.md (bio and photo list). Schemas in src/content.config.ts
+- Images: src/assets/ so Astro optimizes them. About photos go in src/assets/about/
 - Static files: public/ (resume PDF, og-image, favicon, robots.txt)
 
 ## Rules
