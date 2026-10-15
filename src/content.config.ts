@@ -66,12 +66,25 @@ const experience = defineCollection({
     .refine(endNotBeforeStart, endError),
 });
 
+// One "Currently" strip cell. The main line links to url when it has one.
+const currentlyItem = z.object({ title: z.string().min(1), detail: z.string().min(1), url: z.url().optional() });
+
 // One entry, index.md. The body is the bio. Photos live in src/assets/about/ and show in array order.
 const about = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/about' }),
   schema: ({ image }) =>
     z.object({
       photos: z.array(z.object({ src: image(), alt: z.string().min(1).optional() })).default([]),
+      // The strip renders only when this exists
+      currently: z
+        .object({
+          spotifyProfile: z.url().optional(),
+          listening: currentlyItem, // fallback shown before live now-playing data loads
+          watching: currentlyItem,
+          reading: currentlyItem,
+          hike: currentlyItem,
+        })
+        .optional(),
     }),
 });
 

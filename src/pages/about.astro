@@ -6,19 +6,27 @@ import { tallChevron } from '../lib/icons';
 
 const about = (await getEntry('about', 'index'))!;
 const { Content } = await render(about);
-const { photos } = about.data;
+const { photos, currently } = about.data;
 const count = photos.length;
 // One photo is a plain image: no dots, arrows, carousel semantics or script
 const carousel = count > 1;
 
 const focusRing = 'focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-selected';
+// Strip cells in display order. The Listening cell carries data-np-* hooks for the live now-playing script
+const cells = currently && [
+  { label: 'Listening to', ...currently.listening },
+  { label: 'Watching', ...currently.watching },
+  { label: 'Reading', ...currently.reading },
+  { label: 'Last hike', ...currently.hike },
+];
 const arrow = `arrow absolute top-1/2 flex h-22 w-10 -translate-y-1/2 cursor-pointer items-center justify-center rounded-md bg-bg/60 ${focusRing}`;
 ---
 
 <BaseLayout title="About | Raymond Cen" description="[About meta description]">
   <h1 class="sr-only">About</h1>
 
-  <div class="mx-auto flex max-w-[1120px] flex-col gap-4 px-4 pb-4 min-[900px]:flex-row min-[900px]:gap-6 min-[900px]:px-8 min-[900px]:py-2">
+  <div class="mx-auto flex max-w-[1120px] flex-col gap-4 px-4 pb-4 min-[900px]:gap-6 min-[900px]:px-8 min-[900px]:py-2">
+  <div class="flex flex-col gap-4 min-[900px]:flex-row min-[900px]:gap-6">
     <div data-carousel class="relative min-w-0 min-[900px]:flex-[0_1_432px]">
       {count === 0 ? (
         <div class="flex aspect-[4/5] items-center justify-center rounded-[10px] bg-panel-2 text-sub">[Photos to come]</div>
@@ -70,6 +78,39 @@ const arrow = `arrow absolute top-1/2 flex h-22 w-10 -translate-y-1/2 cursor-poi
     <div class="bio flex flex-col gap-4 rounded-[10px] bg-panel px-4 pt-4 pb-5 leading-[1.6] min-[900px]:flex-[1_1_560px] min-[900px]:px-8 min-[900px]:py-7 min-[900px]:text-lg min-[900px]:leading-[1.65]">
       <Content />
     </div>
+  </div>
+
+  {cells && (
+    <section aria-labelledby="currently" class="rounded-[10px] bg-panel min-[900px]:py-[22px]">
+      <h2 id="currently" class="sr-only">Currently</h2>
+      {/* 2 x 2 on mobile, 4 columns on desktop, with divider lines between cells only */}
+      <dl class="grid grid-cols-2 min-[900px]:grid-cols-4">
+        {cells.map((cell, i) => (
+          <div
+            class:list={[
+              'flex min-w-0 flex-col gap-1 border-divider p-4 min-[900px]:px-7 min-[900px]:py-0',
+              i % 2 === 0 && 'border-r',
+              i < 2 && 'border-b min-[900px]:border-b-0',
+              i < 3 ? 'min-[900px]:border-r' : 'min-[900px]:border-r-0',
+            ]}
+          >
+            <dt class="text-xs tracking-[0.08em] text-sub uppercase min-[900px]:text-[13px]" data-np-label={i === 0 ? '' : undefined}>{cell.label}</dt>
+            <dd class="min-w-0">
+              {/* No url: an <a> without href is not a link or focusable, and gives the live script an element to fill */}
+              <a
+                href={cell.url}
+                title={cell.title}
+                {...cell.url && { target: '_blank', rel: 'noopener noreferrer', 'aria-label': `${cell.title} (opens in new tab)` }}
+                class:list={['inline-block max-w-full truncate align-top text-lg min-[900px]:text-xl', cell.url ? `wash ${focusRing}` : 'text-ink']}
+                data-np-link={i === 0 ? '' : undefined}
+              ><span data-np-title={i === 0 ? '' : undefined}>{cell.title}</span></a>
+            </dd>
+            <dd class="text-sm text-sub min-[900px]:text-[15px]" data-np-detail={i === 0 ? '' : undefined}>{cell.detail}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+  )}
   </div>
 
   {carousel && (

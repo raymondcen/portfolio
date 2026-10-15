@@ -30,6 +30,7 @@ If a request conflicts with these, say so before changing anything.
 - Every interactive element needs a visible focus ring and must work by keyboard.
 - Ask before adding a dependency.
 - Leave [bracketed] placeholders in place. Never invent content, metrics or dates.
+- Never commit, amend or push. Leave changes uncommitted for me to review and commit.
 
 ## Commands
 - Dev server: `astro dev --background`, then `astro dev stop`, `astro dev status`, `astro dev logs`
