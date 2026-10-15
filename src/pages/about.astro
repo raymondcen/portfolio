@@ -85,11 +85,16 @@ const arrow = `arrow absolute top-1/2 flex h-22 w-10 -translate-y-1/2 cursor-poi
 
         function show(i) {
           active = i;
-          // At most 5 dots, centered on the active one and pinned at both ends
+          // At most 5 dots, centered on the active one and pinned at both ends.
+          // Dots outside the window collapse to zero width instead of hiding, so the row slides
           const start = Math.max(0, Math.min(i - 2, dots.length - 5));
+          // Three full-size dots centered on the active one. On the first or last photo they shift inward,
+          // so the two dots after the first (or before the last) match the active one
+          const mid = Math.max(1, Math.min(i, last - 1));
           dots.forEach((dot, j) => {
-            dot.hidden = j < start || j >= start + 5;
-            dot.style.setProperty('--d', Math.abs(j - i) <= 1 ? '8px' : '5px');
+            const out = j < start || j >= start + 5;
+            dot.inert = out;
+            dot.style.setProperty('--d', out ? '0px' : Math.abs(j - mid) <= 1 ? '8px' : '5px');
             if (j === i) dot.setAttribute('aria-current', 'true');
             else dot.removeAttribute('aria-current');
           });
@@ -131,19 +136,25 @@ const arrow = `arrow absolute top-1/2 flex h-22 w-10 -translate-y-1/2 cursor-poi
     display: none;
   }
 
-  /* Hit area 14 x 24 centered on the dot. Margins keep a 6px gap between dots: (dot + 6 - 14) / 2 per side */
+  /* Hit area 14 x 24 centered on the dot. Margins keep a 6px gap between dots: (dot + gap - 14) / 2 per side.
+     Out-of-window dots take no space (dot 0, gap 0), so the centered row slides as they collapse and grow.
+     Two steps: the green moves first (120ms), then the row slides and resizes (250ms) */
   .dot {
     --d: 5px;
+    --g: 6px;
     width: 14px;
     height: 24px;
-    margin-inline: calc(var(--d) / 2 - 4px);
-    transition: margin 150ms;
+    margin-inline: calc((var(--d) + var(--g)) / 2 - 7px);
+    transition: margin 250ms ease-in-out 120ms;
+  }
+  .dot[inert] {
+    --g: 0px;
   }
   .dot > span {
     width: var(--d);
     height: var(--d);
     background: #FFFFFF;
-    transition: width 150ms, height 150ms;
+    transition: background-color 120ms, width 250ms ease-in-out 120ms, height 250ms ease-in-out 120ms;
   }
   .dot[aria-current='true'] > span {
     background: var(--color-selected);

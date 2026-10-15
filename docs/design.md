@@ -208,9 +208,10 @@ Carousel
 Dots
 - One `<button>` per photo, overlaid bottom center with no container behind them. Always visible, not tied to hover. Hidden with one photo.
 - At most 5 visible. The window centers on the active photo: `start = clamp(active - 2, 0, count - 5)`, so it pins at the first and last photos.
-- The active dot and its direct neighbors are 8px; the other visible dots are 5px. Gap 6px. The 8px dots sit 16px above the image's bottom edge.
+- Dots outside the window stay in the row but collapse to 0px with no gap and are `inert`. The row stays centered, so when the window moves, the edge dot shrinks away, the incoming one grows and the dots between slide over.
+- Three dots are 8px: the active one and its direct neighbors. On the first photo it is the first three dots, on the last photo the last three. The other visible dots are 5px. Gap 6px. The 8px dots sit 16px above the image's bottom edge.
 - Active: solid `selected` `#006930`. Others: solid `#FFFFFF`. No border, outline or shadow.
-- Size changes animate over 150ms, instant under reduced motion.
+- A change runs in two steps: the `selected` color moves to the new dot over 120ms, then the row slides and the sizes change over 250ms ease-in-out (delayed 120ms). Instant under reduced motion.
 - `aria-label="Go to photo N"`, `aria-current="true"` on the active one. Each hit area is 14 x 24 centered on its dot. Negative margins keep the 6px visual gap, so the hit areas of two 5px neighbors overlap by 3px. 44px would overlap far more; the arrow keys are the keyboard path.
 
 Arrows
