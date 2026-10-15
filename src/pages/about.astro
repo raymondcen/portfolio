@@ -13,6 +13,7 @@ const carousel = count > 1;
 
 const focusRing = 'focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-selected';
 // Strip cells in display order. The Listening cell carries data-np-* hooks for the live now-playing script
+const profile = currently?.spotifyProfile;
 const cells = currently && [
   { label: 'Listening to', ...currently.listening },
   { label: 'Watching', ...currently.watching },
@@ -94,18 +95,25 @@ const arrow = `arrow absolute top-1/2 flex h-22 w-10 -translate-y-1/2 cursor-poi
               i < 3 ? 'min-[900px]:border-r' : 'min-[900px]:border-r-0',
             ]}
           >
-            <dt class="text-xs tracking-[0.08em] text-sub uppercase min-[900px]:text-[13px]" data-np-label={i === 0 ? '' : undefined}>{cell.label}</dt>
+            <dt class="text-xs tracking-[0.08em] text-sub uppercase min-[900px]:text-[13px]">
+              {/* The Listening label links to spotifyProfile when set; the live script swaps its text and shows the dot */}
+              <a
+                href={i === 0 ? profile : undefined}
+                {...(i === 0 && profile ? { target: '_blank', rel: 'noopener noreferrer', 'aria-label': `${cell.label}: Spotify profile (opens in new tab)`, class: `wash ${focusRing}` } : {})}
+                data-np-label-link={i === 0 ? '' : undefined}
+              >{i === 0 && <span data-np-dot hidden class="mr-1.5 inline-block size-[7px] rounded-full bg-selected align-middle"></span>}<span data-np-label={i === 0 ? '' : undefined}>{cell.label}</span></a>
+            </dt>
             <dd class="min-w-0">
               {/* No url: an <a> without href is not a link or focusable, and gives the live script an element to fill */}
               <a
                 href={cell.url}
                 title={cell.title}
                 {...cell.url && { target: '_blank', rel: 'noopener noreferrer', 'aria-label': `${cell.title} (opens in new tab)` }}
-                class:list={['inline-block max-w-full truncate align-top text-lg min-[900px]:text-xl', cell.url ? `wash ${focusRing}` : 'text-ink']}
+                class:list={['inline-block max-w-full truncate align-top text-lg min-[900px]:text-xl', focusRing, cell.url ? 'wash' : 'text-ink']}
                 data-np-link={i === 0 ? '' : undefined}
               ><span data-np-title={i === 0 ? '' : undefined}>{cell.title}</span></a>
             </dd>
-            <dd class="text-sm text-sub min-[900px]:text-[15px]" data-np-detail={i === 0 ? '' : undefined}>{cell.detail}</dd>
+            <dd class="truncate text-sm text-sub min-[900px]:text-[15px]" title={cell.detail} data-np-detail={i === 0 ? '' : undefined}>{cell.detail}</dd>
           </div>
         ))}
       </dl>
@@ -164,6 +172,76 @@ const arrow = `arrow absolute top-1/2 flex h-22 w-10 -translate-y-1/2 cursor-poi
 
         show(0);
         root.querySelector('[data-dots]').hidden = false;
+      }
+    </script>
+  )}
+  {cells && (
+    <script is:inline>
+      // Live Listening cell from /api/now-playing. The server-rendered fallback stays until a fetch returns playing or recent.
+      // No aria-live: a per-minute announcement would be noise
+      {
+        const $ = (name) => document.querySelector(`[data-np-${name}]`);
+        const [labelLink, dot, label, link, title, detail] = ['label-link', 'dot', 'label', 'link', 'title', 'detail'].map($);
+        let np;
+        let timer;
+
+        // One place for the track URL format
+        const trackLink = ({ trackId, trackUrl, playlistId }) =>
+          playlistId ? `https://open.spotify.com/playlist/${playlistId}?highlight=spotify:track:${trackId}` : trackUrl;
+
+        function ago(iso) {
+          const m = Math.floor((Date.now() - Date.parse(iso)) / 60000);
+          if (m < 1) return 'just now';
+          if (m < 60) return `${m}m ago`;
+          if (m < 1440) return `${Math.floor(m / 60)}h ago`;
+          return `${Math.floor(m / 1440)}d ago`;
+        }
+
+        function render() {
+          const playing = np.state === 'playing';
+          dot.hidden = !playing;
+          label.textContent = playing ? 'Listening now' : 'Last played';
+          if (labelLink.href) labelLink.setAttribute('aria-label', `${label.textContent}: Spotify profile (opens in new tab)`);
+
+          link.href = trackLink(np);
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          link.title = title.textContent = np.track;
+          link.setAttribute('aria-label', `${np.track} (opens in new tab)`);
+          link.classList.replace('text-ink', 'wash');
+          // BaseLayout sizes washes present at load; this one changes with every track
+          link.style.setProperty('--wash-size', link.offsetWidth + link.offsetHeight);
+
+          if (playing) detail.replaceChildren(np.artists);
+          else {
+            const time = document.createElement('time');
+            time.dateTime = np.playedAt;
+            time.textContent = ago(np.playedAt);
+            detail.replaceChildren(`${np.artists} · `, time);
+          }
+          detail.title = detail.textContent;
+        }
+
+        // Keeps the last good data on a failed fetch, and recomputes the relative time either way
+        async function tick() {
+          try {
+            const data = await (await fetch('/api/now-playing')).json();
+            if (data.state === 'playing' || data.state === 'recent') np = data;
+          } catch {}
+          if (np) render();
+        }
+
+        // Poll every 60s only while visible
+        function schedule() {
+          clearInterval(timer);
+          if (document.visibilityState === 'visible') timer = setInterval(tick, 60000);
+        }
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible') tick();
+          schedule();
+        });
+        tick();
+        schedule();
       }
     </script>
   )}

@@ -202,10 +202,21 @@ Currently strip
 - Rendered only when `currently` exists in frontmatter. A `<section>` with a screen-reader-only `<h2>Currently</h2>`; the cells are a `<dl>`.
 - Desktop (≥ 900px): one `panel` box below the photo and bio row, inside the same container, 24px gap above. Radius 10px, 22px vertical padding, 4 equal columns split by 1px `divider` lines, 28px horizontal padding per cell.
 - Mobile (< 900px): the same box under the bio with a 16px gap, as a 2 x 2 grid with `divider` lines between cells only and 16px cell padding.
-- Cell order: Listening ("Listening to"), Watching, Reading, Last hike. Each cell, top to bottom: label (13px desktop, 12px mobile, uppercase, 0.08em tracking, `sub`), main line (20px desktop, 18px mobile, `ink`, one line with ellipsis, full text in `title`), detail line (15px desktop, 14px mobile, `sub`).
+- Cell order: Listening ("Listening to"), Watching, Reading, Last hike. Each cell, top to bottom: label (13px desktop, 12px mobile, uppercase, 0.08em tracking, `sub`), main line (20px desktop, 18px mobile, `ink`, one line with ellipsis, full text in `title`), detail line (15px desktop, 14px mobile, `sub`, one line with ellipsis, full text in `title`). One-line text keeps the cell height fixed, so live updates never shift the layout.
 - The main line is an `<a>`. With `url` it is a link: `.wash` hover, the site focus ring, new tab (`rel="noopener noreferrer"`, `aria-label` ending "(opens in new tab)"). Without `url` it has no `href`, so it is neither a link nor focusable and shows plain `ink`.
-- Placeholders: every entry is still `[bracketed]`. `listening` is the fallback shown before live data loads. `spotifyProfile` is not set yet.
-- The Listening cell's label, main `<a>`, title `<span>` and detail carry `data-np-label`, `data-np-link`, `data-np-title` and `data-np-detail` for the live now-playing script, which is not built yet. The strip is static HTML with no JS.
+- Placeholders: every entry is still `[bracketed]`. `listening` is the fallback shown without JS, before live data loads and whenever the fetch fails. `spotifyProfile` is not set yet.
+- With `spotifyProfile` set, the Listening label is a link to it: `.wash`, the site focus ring, new tab, `aria-label` "{label}: Spotify profile (opens in new tab)".
+
+Live Listening cell
+- One `is:inline` script, rendered with the strip. It reads `/api/now-playing` on load, then every 60s while `document.visibilityState` is `visible`. Polling stops while the tab is hidden, and a fetch runs right away when it is visible again.
+- Hooks: `data-np-label-link`, `data-np-dot`, `data-np-label`, `data-np-link`, `data-np-title` and `data-np-detail`.
+- State `playing`: label "Listening now" with a 7px solid `selected` dot before it. Detail is the artists.
+- State `recent`: label "Last played". Detail is "{artists} · {relative time}" with the time in `<time datetime>`: "just now" under 1 minute, then "{n}m ago", "{n}h ago", "{n}d ago". Recomputed on every tick.
+- The main line becomes a `.wash` link to the track, new tab, `aria-label` "{track} (opens in new tab)". `trackLink({ trackId, trackUrl, playlistId })` holds the URL format: with `playlistId`, `https://open.spotify.com/playlist/{playlistId}?highlight=spotify:track:{trackId}`; without, `trackUrl`. The script sets `--wash-size` itself since BaseLayout only sizes washes present at load.
+- `title` on the main line and detail follows the visible text.
+- A failed fetch, a non-JSON body or state `error` changes nothing: the fallback stays, or the last good data stays with its time recomputed.
+- No `aria-live`: a per-minute announcement would be noise.
+- `astro dev` has no `/api` route, so it only shows the fallback. Test with `npm run build && npx wrangler dev` and a filled `.dev.vars`.
 
 Carousel
 - The track is a horizontal scroller with `scroll-snap-type: x mandatory` and a hidden scrollbar. One slide per photo, each 100% wide, 4:5, `object-fit: cover`, with square corners. The track itself has the 10px radius and clips the slides, so the rounded frame stays still and only the photos move. The frame shows exactly one photo with no preview of the next and no multi-image badge. Touch swipe and trackpad scroll are native scrolling. No auto-advance.
