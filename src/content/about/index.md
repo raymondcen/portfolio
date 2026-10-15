@@ -1,7 +1,6 @@
 ---
 photos:
-  # - src: ../../assets/about/selfie.jpg
-  - src: ../../assets/about/IMG_3969.jpeg
+  - src: ../../assets/about/selfie.jpg
   - src: ../../assets/about/mnt_pisgah_sunrise.jpg
   - src: ../../assets/about/friends_outside_apt.jpg
   - src: ../../assets/about/post_hike_brunch.jpg
