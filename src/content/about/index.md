@@ -8,6 +8,7 @@ photos:
   - src: ../../assets/about/marys_peak_sunset.jpg
   - src: ../../assets/about/gym_mirror_pic.jpg
 currently:
+  spotifyProfile: "https://open.spotify.com/user/3134nm7o5fcecrz5bun3ufb465ty"
   listening:
     title: "[Track]"
     detail: "[Artist]"
