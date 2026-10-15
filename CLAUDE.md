@@ -1,6 +1,6 @@
 # Raymond Cen portfolio
 
-Static personal portfolio for recruiters. Astro 7, Tailwind v4, content collections, hosted on Cloudflare Workers (static assets only). No backend, database, CMS or UI library.
+Static personal portfolio for recruiters. Astro 7, Tailwind v4, content collections, hosted on Cloudflare Workers (static assets plus one Worker route, `/api/now-playing`, in worker/index.ts). No other backend, database, CMS or UI library.
 
 ## Source of truth
 At the start of every session, read every file in docs/: Markdown, PDFs and images (PNG, JPG, WebP). Open images and PDFs with the view tool.
@@ -36,6 +36,9 @@ If a request conflicts with these, say so before changing anything.
 - Build: `npm run build`
 - Type and content check: `npx astro check`
 - Preview built dist the way Workers serves it: `npx wrangler dev`
+- Test the API: `npm run build && npx wrangler dev`, then open http://127.0.0.1:8787/api/now-playing. Returns 503 `{"state":"error"}` until .dev.vars has all three Spotify keys
+- Spotify refresh token (one time): put SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET in .dev.vars (copy .dev.vars.example), then `npm run spotify:auth`
+- Worker types: `npx wrangler types worker/worker-configuration.d.ts` after changing wrangler.jsonc or .dev.vars keys
 
 Run the build and check before saying a task is done.
 
