@@ -1,11 +1,11 @@
 ---
 photos:
-  - src: ../../assets/about/selfie.jpg
+  # - src: ../../assets/about/selfie.jpg
+  - src: ../../assets/about/IMG_3969.jpeg
   - src: ../../assets/about/mnt_pisgah_sunrise.jpg
   - src: ../../assets/about/friends_outside_apt.jpg
-  - src: ../../assets/about/gym_mirror_pic.jpg
   - src: ../../assets/about/post_hike_brunch.jpg
-  - src: ../../assets/about/mirror_pic_sitting.jpg
+  - src: ../../assets/about/gym_mirror_pic.jpg
   - src: ../../assets/about/marys_peak_sunset.jpg
 ---
 
