@@ -59,8 +59,8 @@ const focusRing = 'focus-visible:outline-2 focus-visible:outline-offset-4 focus-
   {/* Mobile: native accordion */}
   <div class="px-4 pb-4 min-[900px]:hidden">
     <div class="rounded-[10px] bg-panel px-4">
-      {projects.map((project, i) => (
-        <details name="projects" open={i === 0} class="border-b border-divider last:border-b-0">
+      {projects.map((project) => (
+        <details name="projects" class="border-b border-divider last:border-b-0">
           <summary class={`group flex cursor-pointer list-none items-start gap-3 rounded-md py-4 ${focusRing}`}>
             <span class="flex min-w-0 flex-1 flex-col">
               <span class="wash self-start text-lg font-semibold [overflow-wrap:anywhere]">{project.data.title}</span>

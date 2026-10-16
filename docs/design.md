@@ -126,7 +126,7 @@ Behavior
 - Opening a row closes the open one above it, which would pull the tapped row up off screen. A small inline script keeps the tapped summary at the same viewport position on `toggle` (`scrollBy` by the difference), so the project expands downward. Without JS the jump returns, which is acceptable.
 - Layout: `px-4 pb-4` around one `panel` box, radius 10px, 16px horizontal padding. Items are split by `divider` lines, none after the last.
 - Summary: 16px vertical padding, the same title, dates and summary stack as a desktop row, and a 24px `chevron-down` on the right. Hovering anywhere on the summary sweeps the title. The open item's body (image, description, bullets, metric, tags, links) uses the same component as the desktop panel (`ProjectDetail.astro`) with a 16px gap and 24px bottom padding.
-- The first project is open on load. No hash links to individual projects.
+- Every project starts collapsed. No hash links to individual projects.
 - Open item: title and chevron in `selected` `#006930`, like the selected row on desktop. Closed items use the `.wash` hover.
 - The viewport lock does not apply below 900px.
 
