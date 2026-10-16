@@ -191,11 +191,15 @@ const arrow = `arrow absolute top-1/2 flex h-22 w-10 -translate-y-1/2 cursor-poi
         let np;
 
         // Hover scroll: each line that overflows gets its overflow as --shift and a 30px/s duration as --dur.
-        // A negative text-indent doesn't change scrollWidth, so this measures correctly even mid-scroll
+        // Fractional widths from a Range, rounded up: scrollWidth rounds, and a line left even 0.3px over
+        // still overflows, so the ellipsis eats its last letter. A negative text-indent doesn't change the text's width,
+        // so this measures correctly even mid-scroll
+        const range = document.createRange();
         function fit() {
           for (const el of lines) {
-            const over = el.scrollWidth - el.clientWidth;
-            el.style.setProperty('--shift', over > 1 ? `${-over}px` : '0px');
+            range.selectNodeContents(el);
+            const over = Math.ceil(range.getBoundingClientRect().width - el.getBoundingClientRect().width);
+            el.style.setProperty('--shift', over > 0 ? `${-over}px` : '0px');
             el.style.setProperty('--dur', `${Math.max(over, 0) / 30}s`);
           }
         }
