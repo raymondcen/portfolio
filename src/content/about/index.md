@@ -8,17 +8,17 @@ photos:
   - src: ../../assets/about/marys_peak_sunset.jpg
 currently:
   listening:
-    title: "[Track]"
-    detail: "[Artist]"
+    title: "Waiting..."
+    detail: "Waiting..."
   watching:
-    title: "[Show]"
-    detail: "[Season or episode]"
+    title: "Cyberpunk: Edgerunners"
+    detail: "Hiroyuki Imaishi"
   reading:
-    title: "[Manga]"
-    detail: "[Volume or chapter]"
+    title: "Sakamoto Days"
+    detail: "Yuto Suzuki"
   hike:
-    title: "[Trail]"
-    detail: "[Distance, month]"
+    title: "Bald Hill Natural Area"
+    detail: "Corvallis, OR"
 ---
 
 Hi, my name is Raymond! I'm a senior at Oregon State studying Computer Science with a focus in data science. I'm most excited about building and training machine learning models and digging into data to see what it actually shows. Outside of class, you'll find me in the gym most evenings or out hiking with friends. The rest of the time, I'm usually looking for new music, finding my next show to binge or reading manga.
