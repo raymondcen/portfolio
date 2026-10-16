@@ -108,7 +108,8 @@ export default {
         throw new Error('missing secret');
       }
       res = json(await nowPlaying(env), 200, 30);
-    } catch {
+    } catch (err) {
+      console.error('now-playing failed:', err instanceof Error ? err.message : err);
       res = json({ state: 'error' }, 503, 10);
     }
     ctx.waitUntil(cache.put(request, res.clone()));
