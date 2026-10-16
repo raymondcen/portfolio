@@ -255,7 +255,8 @@ const arrow = `arrow absolute top-1/2 flex h-22 w-10 -translate-y-1/2 cursor-poi
         async function tick() {
           let data;
           try {
-            data = await (await fetch('/api/now-playing')).json();
+            // Timeout so a stalled request lands in the failure path instead of hanging
+            data = await (await fetch('/api/now-playing', { signal: AbortSignal.timeout(10000) })).json();
           } catch {}
           if (data?.state === 'playing' || data?.state === 'recent') np = data;
           else if (np?.state === 'playing') np = { ...np, state: 'recent', playedAt: new Date().toISOString() };

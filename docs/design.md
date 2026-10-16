@@ -324,7 +324,8 @@ Scrapers harvest addresses from `mailto:` links and plain text in HTML. Approach
 - KV: binding `NOW_PLAYING`, key `last`, `{ trackId, track, artists, trackUrl, playlistId, playing, at }`. Saved whenever currently-playing returns a track, only when `trackId` or `playing` changed. `at` (ms) is now when playing starts, `timestamp` for a pause. A KV failure is logged and the endpoint continues with recently-played alone.
 - Cron: `scheduled()` runs every minute, so plays and pauses are recorded while nobody is on the site. It gets an access token, calls currently-playing and saves a returned track to KV with the same rules as the endpoint. It never reads or writes the edge cache. Every failure is caught and logged with `console.error`.
 - Response: `{ state, track, artists, trackId, trackUrl, playlistId, playedAt }`. `artists` is the names joined with ", ". `trackUrl` is the track's `external_urls.spotify`. `playlistId` is the id from `context.uri` when `context.type` is `playlist`, else null. `playedAt` is null while playing.
-- Caching: JSON is stored in `caches.default` keyed on the request URL for 15s with `Cache-Control: public, max-age=15`.
+- Caching: JSON is stored in `caches.default` keyed on the request URL for 15s with `Cache-Control: public, max-age=15`. Browsers get `Cache-Control: no-store` on every response, hit or miss. Spotify calls time out after 5s and the page's fetch after 10s.
+- Browser Cache TTL: the zone setting (Cloudflare dashboard, Caching > Configuration) is "Respect Existing Headers", so every route sets its own `Cache-Control`. The default (4h) raises any lower max-age on responses served from Cloudflare's cache, which pinned an old track in browsers. The endpoint's `no-store` keeps it safe if the setting is ever reset.
 - Errors: any Spotify failure or missing secret returns 503 `{ "state": "error" }`, cached 10s. Tokens and Spotify error bodies are never exposed.
 
 ## 5. Testing the Spotify strip locally

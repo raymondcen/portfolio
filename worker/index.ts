@@ -22,6 +22,9 @@ type SpotifyContext = { type: string; uri: string } | null;
 
 const API = 'https://api.spotify.com/v1/me/player';
 
+// Spotify calls give up after 5s so a stalled upstream returns 503 instead of hanging the request
+const timeout = () => AbortSignal.timeout(5000);
+
 let token: { value: string; expires: number } | null = null;
 
 async function accessToken(env: Env): Promise<string> {
@@ -33,6 +36,7 @@ async function accessToken(env: Env): Promise<string> {
       'Content-Type': 'application/x-www-form-urlencoded',
     },
     body: new URLSearchParams({ grant_type: 'refresh_token', refresh_token: env.SPOTIFY_REFRESH_TOKEN }),
+    signal: timeout(),
   });
   if (!res.ok) throw new Error(`token ${res.status}`);
   const data = (await res.json()) as { access_token: string; expires_in: number };
@@ -87,7 +91,7 @@ async function remember(env: Env, np: NowPlaying, playing: boolean, at: number):
 
 // Current track, saved to KV. Null when nothing is playing or paused (204, episode, ad).
 async function current(env: Env, headers: HeadersInit): Promise<NowPlaying | null> {
-  const res = await fetch(`${API}/currently-playing`, { headers });
+  const res = await fetch(`${API}/currently-playing`, { headers, signal: timeout() });
   if (res.status === 200) {
     const data = (await res.json()) as {
       is_playing: boolean;
@@ -114,7 +118,7 @@ async function nowPlaying(env: Env): Promise<NowPlaying> {
   if (np) return np;
 
   // No track now: the newer of the stored track and recently-played wins
-  const [stored, recent] = await Promise.all([recall(env), fetch(`${API}/recently-played?limit=1`, { headers })]);
+  const [stored, recent] = await Promise.all([recall(env), fetch(`${API}/recently-played?limit=1`, { headers, signal: timeout() })]);
   if (!recent.ok) throw new Error(`recently-played ${recent.status}`);
   const data = (await recent.json()) as {
     items: { track: SpotifyTrack; played_at: string; context: SpotifyContext }[];
@@ -136,6 +140,14 @@ function json(body: unknown, status: number, maxAge: number): Response {
   });
 }
 
+// The edge copy keeps its short max-age; browsers get no-store. On cache hits Cloudflare's zone
+// Browser Cache TTL rewrote max-age to 4h, which pinned an old track in the browser
+function noStore(res: Response): Response {
+  const out = new Response(res.body, res);
+  out.headers.set('Cache-Control', 'no-store');
+  return out;
+}
+
 export default {
   async fetch(request, env, ctx): Promise<Response> {
     const url = new URL(request.url);
@@ -147,7 +159,7 @@ export default {
 
     const cache = caches.default;
     const hit = await cache.match(request);
-    if (hit) return hit;
+    if (hit) return noStore(hit);
 
     let res: Response;
     try {
@@ -160,7 +172,7 @@ export default {
       res = json({ state: 'error' }, 503, 10);
     }
     ctx.waitUntil(cache.put(request, res.clone()));
-    return res;
+    return noStore(res);
   },
 
   // Cron: keeps KV current while nobody is on the site. Never touches the edge cache.
