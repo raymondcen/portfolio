@@ -118,6 +118,15 @@ const focusRing = 'focus-visible:outline-2 focus-visible:outline-offset-4 focus-
     for (const b of buttons) {
       b.addEventListener('click', () => select(b.dataset.slug));
     }
+
+    // Mobile: opening a row closes the open one above it, which pulls the tapped row up off screen.
+    // Hold the tapped row where it was so the project expands downward.
+    for (const s of document.querySelectorAll('details[name="projects"] > summary')) {
+      s.addEventListener('click', () => {
+        const top = s.getBoundingClientRect().top;
+        s.parentElement.addEventListener('toggle', () => scrollBy(0, s.getBoundingClientRect().top - top), { once: true });
+      });
+    }
   </script>
 </BaseLayout>
 
