@@ -85,12 +85,11 @@ async function remember(env: Env, np: NowPlaying, playing: boolean, at: number):
   }
 }
 
-async function nowPlaying(env: Env): Promise<NowPlaying> {
-  const headers = { Authorization: `Bearer ${await accessToken(env)}` };
-
-  const current = await fetch(`${API}/currently-playing`, { headers });
-  if (current.status === 200) {
-    const data = (await current.json()) as {
+// Current track, saved to KV. Null when nothing is playing or paused (204, episode, ad).
+async function current(env: Env, headers: HeadersInit): Promise<NowPlaying | null> {
+  const res = await fetch(`${API}/currently-playing`, { headers });
+  if (res.status === 200) {
+    const data = (await res.json()) as {
       is_playing: boolean;
       timestamp: number;
       item: SpotifyTrack | null;
@@ -103,9 +102,16 @@ async function nowPlaying(env: Env): Promise<NowPlaying> {
       await remember(env, np, data.is_playing, data.is_playing ? Date.now() : data.timestamp);
       return np;
     }
-  } else if (current.status !== 204) {
-    throw new Error(`currently-playing ${current.status}`);
+  } else if (res.status !== 204) {
+    throw new Error(`currently-playing ${res.status}`);
   }
+  return null;
+}
+
+async function nowPlaying(env: Env): Promise<NowPlaying> {
+  const headers = { Authorization: `Bearer ${await accessToken(env)}` };
+  const np = await current(env, headers);
+  if (np) return np;
 
   // No track now: the newer of the stored track and recently-played wins
   const [stored, recent] = await Promise.all([recall(env), fetch(`${API}/recently-played?limit=1`, { headers })]);
@@ -155,5 +161,14 @@ export default {
     }
     ctx.waitUntil(cache.put(request, res.clone()));
     return res;
+  },
+
+  // Cron: keeps KV current while nobody is on the site. Never touches the edge cache.
+  async scheduled(_controller, env): Promise<void> {
+    try {
+      await current(env, { Authorization: `Bearer ${await accessToken(env)}` });
+    } catch (err) {
+      console.error('scheduled failed:', err instanceof Error ? err.message : err);
+    }
   },
 } satisfies ExportedHandler<Env>;
