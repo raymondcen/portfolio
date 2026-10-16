@@ -10,7 +10,6 @@ tags: [Astro, TypeScript, Tailwind CSS, Cloudflare Workers, Spotify Web API]
 github: https://github.com/raymondcen/portfolio
 live: https://rcen.dev
 status: complete
-order: 60
 ---
 
 Personal site for recruiters covering my projects, experience and background. Pages are prebuilt with Astro and Tailwind and served from Cloudflare's edge, with a Worker handling `/api/*` routes.

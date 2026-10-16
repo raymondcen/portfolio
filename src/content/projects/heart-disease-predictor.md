@@ -13,7 +13,6 @@ image:
   src: ../../assets/projects/heart-disease-predictor-eda.png
   alt: "Two bar charts of heart disease counts by age group and by sex. Cases rise with age but stay a small share of every group."
 status: archived
-order: 20
 ---
 
 Trains and compares classifiers on Kaggle's Personal Key Indicators of Heart Disease data (target `HadHeartAttack`) and serves predictions through a Flask form. Built to practice the full lifecycle from EDA to cloud deployment.

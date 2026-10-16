@@ -12,7 +12,6 @@ image:
   src: ../../assets/projects/snake-home.png
   alt: "Home page of the snake game, labeled Ekans."
 status: archived
-order: 70
 ---
 
 Recreates classic games in C++ with raylib, with a planned Qt launcher. Snake and Tetris are playable.

@@ -1,11 +1,11 @@
 ---
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { dates } from '../lib/dates';
+import { dates, newestFirst } from '../lib/dates';
 
 const entries = await Promise.all(
   (await getCollection('experience'))
-    .sort((a, b) => a.data.order - b.data.order)
+    .sort(newestFirst)
     .map(async (entry) => ({ ...entry.data, Content: (await render(entry)).Content })),
 );
 ---

@@ -8,3 +8,9 @@ export const month = (ym: string) => {
 
 export const dates = ({ start, end }: { start: string; end?: string }) =>
   end === start ? month(start) : `${month(start)} – ${end ? month(end) : 'Present'}`;
+
+// Newest first: latest end (absent end means present, so it sorts first), then latest start
+type Dated = { data: { start: string; end?: string } };
+const endKey = (e: Dated) => e.data.end ?? '9999-12';
+export const newestFirst = (a: Dated, b: Dated) =>
+  endKey(b).localeCompare(endKey(a)) || b.data.start.localeCompare(a.data.start);

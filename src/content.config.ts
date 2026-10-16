@@ -26,7 +26,6 @@ const projects = defineCollection({
         summary: z.string().min(1),
         tags,
         status: z.enum(['complete', 'archived', 'in-progress']),
-        order: z.number().int(),
 
         // Optional
         end: month.optional(), // equal to start for a single-month project, absent means present
@@ -55,7 +54,6 @@ const experience = defineCollection({
       type: z.string().min(1), // employment or enrollment type
       summary: z.string().min(1), // one line
       tags,
-      order: z.number().int(),
 
       // Optional
       end: month.optional(), // absent means present

@@ -14,7 +14,6 @@ image:
   src: ../../assets/projects/talktask-voice-input.png
   alt: "Voice input flowchart. The transcript is parsed and checked for valid delimiters, missing fields get default values and the result is sent to the task component as a task object."
 status: complete
-order: 30
 ---
 
 Personal to-do tracker with speech recognition for hands-free task management. It has category and calendar views and Gemini-suggested tasks, and was designed with accessibility in mind.

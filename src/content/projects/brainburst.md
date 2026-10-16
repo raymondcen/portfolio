@@ -12,7 +12,6 @@ github: https://github.com/raymondcen/brainburst
 devpost: https://devpost.com/software/brainburst
 video: https://www.youtube.com/watch?v=o_bqAuwcAtI
 status: archived
-order: 50
 ---
 
 A TikTok-style infinite scroll of flashcards meant to replace doom scrolling with quick learning. Learn mode shows term and definition cards, and practice mode has Gemini generate wrong answers around the real one. The layout is mobile-first.

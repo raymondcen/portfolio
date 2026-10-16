@@ -2,10 +2,10 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ProjectDetail from '../components/ProjectDetail.astro';
-import { dates } from '../lib/dates';
+import { dates, newestFirst } from '../lib/dates';
 import { maskIcon } from '../lib/icons';
 
-const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+const projects = (await getCollection('projects')).sort(newestFirst);
 
 const focusRing = 'focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-selected';
 ---

@@ -10,7 +10,6 @@ summary: PHP and MySQL app simulating a gym's members, workouts, exercises, sets
 tags: [PHP, MySQL, SQL, CSS]
 github: https://github.com/raymondcen/CS340Proj
 status: complete
-order: 80
 ---
 
 Simulates running a gym, tracking members and their workout plans down to exercises, sets and reps. The database links members to dated workouts, each with a mental and physical rating, and workouts to exercises with reps, sets, rest time and weight. A junction table maps each exercise to the muscle groups it works.

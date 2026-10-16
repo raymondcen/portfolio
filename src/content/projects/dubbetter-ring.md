@@ -14,7 +14,6 @@ image:
   alt: "Gabriel Valdez, Raymond Cen and Ivan Wong, left to right, at DubHacks '25 with the doorbell prototype: a Raspberry Pi 5 connected to a USB webcam."
 devpost: https://devpost.com/software/dubbetter-ring
 status: archived
-order: 40
 ---
 
 A privacy-first smart doorbell that keeps footage away from third-party companies. A USB camera on a Raspberry Pi 5 feeds AI models that classify activity at the door. The Pi acts as the backend and pushes events and a live feed to a React client over WebSockets.

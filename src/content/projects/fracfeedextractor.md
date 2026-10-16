@@ -15,7 +15,6 @@ image:
   src: ../../assets/projects/fracfeedextractor-architecture.png
   alt: "System flow diagram. A researcher runs the pipeline on a local machine: a Google Drive script downloads PDFs, a text extraction module falls back to Tesseract OCR, a TF-IDF and XGBoost classifier flags useful papers, an LLM extracts key fields to JSON and CSV and every stage logs to a metrics store."
 status: in-progress
-order: 10
 ---
 
 Screens folders of ecological research PDFs with a TF-IDF and XGBoost classifier. Relevant papers go to a locally run LLM through Ollama, which extracts stomach counts and covariates into JSON and CSV with confidence and provenance. Built for Mark Novak's lab to validate the fraction of feeding individuals metric without hand-harvesting a century of diet surveys. Running the LLM on-device keeps unpublished manuscripts in the researcher's environment.
