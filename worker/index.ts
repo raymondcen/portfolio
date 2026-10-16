@@ -7,6 +7,7 @@ type NowPlaying = {
   trackId: string;
   trackUrl: string;
   playlistId: string | null;
+  playlistName: string | null;
   playedAt: string | null;
 };
 
@@ -57,8 +58,27 @@ function shape(
     trackId: track.id,
     trackUrl: track.external_urls.spotify,
     playlistId: context?.type === 'playlist' ? context.uri.split(':').pop()! : null,
+    playlistName: null,
     playedAt,
   };
+}
+
+// Playlist names by id, kept for the isolate's life. Only successes are kept, so a failure retries next time
+const playlists = new Map<string, string>();
+
+// Null when Spotify won't return it (Spotify-owned playlists 404 for new apps) or the call fails; the label then has no playlist
+async function playlistName(id: string, headers: HeadersInit): Promise<string | null> {
+  if (playlists.has(id)) return playlists.get(id)!;
+  try {
+    const res = await fetch(`https://api.spotify.com/v1/playlists/${id}?fields=name`, { headers, signal: timeout() });
+    if (!res.ok) throw new Error(`${res.status}`);
+    const { name } = (await res.json()) as { name: string };
+    playlists.set(id, name);
+    return name;
+  } catch (err) {
+    console.error('playlist failed:', err instanceof Error ? err.message : err);
+    return null;
+  }
 }
 
 // Last track the Worker saw, so a pause survives Spotify dropping the session.
@@ -103,6 +123,8 @@ async function current(env: Env, headers: HeadersInit): Promise<NowPlaying | nul
       const np = data.is_playing
         ? shape('playing', data.item, data.context, null)
         : shape('recent', data.item, data.context, new Date(data.timestamp).toISOString());
+      // The page shows the playlist only while playing
+      if (data.is_playing && np.playlistId) np.playlistName = await playlistName(np.playlistId, headers);
       await remember(env, np, data.is_playing, data.is_playing ? Date.now() : data.timestamp);
       return np;
     }

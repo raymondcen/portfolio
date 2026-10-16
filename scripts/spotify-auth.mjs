@@ -7,7 +7,7 @@ import { randomBytes } from 'node:crypto';
 
 const FILE = '.dev.vars';
 const REDIRECT = 'http://127.0.0.1:8888/callback';
-const SCOPES = 'user-read-currently-playing user-read-recently-played';
+const SCOPES = 'user-read-currently-playing user-read-recently-played playlist-read-private playlist-read-collaborative';
 
 const text = readFileSync(FILE, 'utf8');
 const vars = Object.fromEntries(

@@ -98,7 +98,9 @@ const arrow = `arrow absolute top-1/2 flex h-22 w-10 -translate-y-1/2 cursor-poi
             <dt class="flex items-center text-xs tracking-[0.08em] text-sub uppercase min-[900px]:text-[13px]">
               {/* The live script swaps the Listening label's text and shows the dot. Flex centers the dot on the line box;
                   align-middle centers on the x-height, which sits low against uppercase text */}
-              {i === 0 && <span data-np-dot hidden class="mr-1.5 size-[7px] shrink-0 rounded-full bg-selected"></span>}<span data-np-label={i === 0 ? '' : undefined}>{cell.label}</span>
+              {i === 0 && <span data-np-dot hidden class="mr-1.5 size-[7px] shrink-0 rounded-full bg-selected"></span>}
+              {/* Listening label: a scroll line, since "Listening now · {playlist}" can overflow */}
+              <span data-np-label={i === 0 ? '' : undefined} class:list={[i === 0 && 'scroll-line block min-w-0 truncate']}>{cell.label}</span>
             </dt>
             <dd class="min-w-0">
               {/* No url: an <a> without href is not a link or focusable, and gives the live script an element to fill */}
@@ -208,9 +210,13 @@ const arrow = `arrow absolute top-1/2 flex h-22 w-10 -translate-y-1/2 cursor-poi
         document.fonts.ready.then(fit);
         let timer;
 
-        // One place for the track URL format
-        const trackLink = ({ trackId, trackUrl, playlistId }) =>
-          playlistId ? `https://open.spotify.com/playlist/${playlistId}?highlight=spotify:track:${trackId}` : trackUrl;
+        // Playlist link in the "Listening now" label. One element, and the label is rebuilt only when the playlist changes,
+        // so a 30s tick never drops its focus or hover. The ring is inset: the label clips anything outside its box
+        const playlist = document.createElement('a');
+        playlist.target = '_blank';
+        playlist.rel = 'noopener noreferrer';
+        playlist.className = 'wash normal-case focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-selected';
+        let labelKey;
 
         function ago(iso) {
           const m = Math.floor((Date.now() - Date.parse(iso)) / 60000);
@@ -223,8 +229,20 @@ const arrow = `arrow absolute top-1/2 flex h-22 w-10 -translate-y-1/2 cursor-poi
         function render() {
           const playing = np.state === 'playing';
           dot.hidden = !playing;
-          if (playing) label.replaceChildren('Listening now');
-          else {
+          if (playing) {
+            const key = np.playlistId && np.playlistName ? `${np.playlistId} ${np.playlistName}` : '';
+            if (key !== labelKey) {
+              labelKey = key;
+              if (key) {
+                playlist.href = `https://open.spotify.com/playlist/${np.playlistId}`;
+                playlist.title = playlist.textContent = np.playlistName;
+                playlist.setAttribute('aria-label', `${np.playlistName} playlist (opens in new tab)`);
+                label.replaceChildren('Listening now · ', playlist);
+                playlist.style.setProperty('--wash-size', playlist.offsetWidth + playlist.offsetHeight);
+              } else label.replaceChildren('Listening now');
+            }
+          } else {
+            labelKey = undefined;
             const time = document.createElement('time');
             time.dateTime = np.playedAt;
             time.textContent = ago(np.playedAt);
@@ -233,7 +251,7 @@ const arrow = `arrow absolute top-1/2 flex h-22 w-10 -translate-y-1/2 cursor-poi
             label.replaceChildren('Last played · ', time);
           }
 
-          link.href = trackLink(np);
+          link.href = np.trackUrl;
           link.target = '_blank';
           link.rel = 'noopener noreferrer';
           link.title = title.textContent = np.track;
