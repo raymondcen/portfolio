@@ -4,7 +4,12 @@ Personal portfolio for Raymond Cen, live at **[rcen.dev](https://rcen.dev)**.
 
 ![rcen.dev preview](public/og-image.png)
 
-[![Stack: Astro, Tailwind CSS, TypeScript, Cloudflare Workers](https://skillicons.dev/icons?i=astro,tailwind,ts,workers)](https://skillicons.dev)
+<p>
+  <a href="https://astro.build"><img src="https://skillicons.dev/icons?i=astro" alt="Astro" height="48"></a>
+  <a href="https://tailwindcss.com"><img src="https://skillicons.dev/icons?i=tailwind" alt="Tailwind CSS" height="48"></a>
+  <a href="https://www.typescriptlang.org"><img src="https://skillicons.dev/icons?i=ts" alt="TypeScript" height="48"></a>
+  <a href="https://workers.cloudflare.com"><img src="https://skillicons.dev/icons?i=workers" alt="Cloudflare Workers" height="48"></a>
+</p>
 
 ## Run locally
 
