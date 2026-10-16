@@ -78,7 +78,6 @@ const about = defineCollection({
       // The strip renders only when this exists
       currently: z
         .object({
-          spotifyProfile: z.url().optional(),
           listening: currentlyItem, // fallback shown before live now-playing data loads
           watching: currentlyItem,
           reading: currentlyItem,

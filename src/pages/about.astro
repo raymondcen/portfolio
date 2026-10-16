@@ -13,7 +13,6 @@ const carousel = count > 1;
 
 const focusRing = 'focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-selected';
 // Strip cells in display order. The Listening cell carries data-np-* hooks for the live now-playing script
-const profile = currently?.spotifyProfile;
 const cells = currently && [
   { label: 'Listening to', ...currently.listening },
   { label: 'Watching', ...currently.watching },
@@ -88,6 +87,7 @@ const arrow = `arrow absolute top-1/2 flex h-22 w-10 -translate-y-1/2 cursor-poi
       <dl class="grid grid-cols-2 min-[900px]:grid-cols-4">
         {cells.map((cell, i) => (
           <div
+            data-np-cell={i === 0 ? '' : undefined}
             class:list={[
               'flex min-w-0 flex-col gap-1 border-divider p-4 min-[900px]:px-7 min-[900px]:py-0',
               i % 2 === 0 && 'border-r',
@@ -96,12 +96,8 @@ const arrow = `arrow absolute top-1/2 flex h-22 w-10 -translate-y-1/2 cursor-poi
             ]}
           >
             <dt class="text-xs tracking-[0.08em] text-sub uppercase min-[900px]:text-[13px]">
-              {/* The Listening label links to spotifyProfile when set; the live script swaps its text and shows the dot */}
-              <a
-                href={i === 0 ? profile : undefined}
-                {...(i === 0 && profile ? { target: '_blank', rel: 'noopener noreferrer', 'aria-label': `${cell.label}: Spotify profile (opens in new tab)`, class: `wash ${focusRing}` } : {})}
-                data-np-label-link={i === 0 ? '' : undefined}
-              >{i === 0 && <span data-np-dot hidden class="mr-1.5 inline-block size-[7px] rounded-full bg-selected align-middle"></span>}<span data-np-label={i === 0 ? '' : undefined}>{cell.label}</span></a>
+              {/* The live script swaps the Listening label's text and shows the dot */}
+              {i === 0 && <span data-np-dot hidden class="mr-1.5 inline-block size-[7px] rounded-full bg-selected align-middle"></span>}<span data-np-label={i === 0 ? '' : undefined}>{cell.label}</span>
             </dt>
             <dd class="min-w-0">
               {/* No url: an <a> without href is not a link or focusable, and gives the live script an element to fill */}
@@ -111,9 +107,11 @@ const arrow = `arrow absolute top-1/2 flex h-22 w-10 -translate-y-1/2 cursor-poi
                 {...cell.url && { target: '_blank', rel: 'noopener noreferrer', 'aria-label': `${cell.title} (opens in new tab)` }}
                 class:list={['inline-block max-w-full truncate align-top text-lg min-[900px]:text-xl', focusRing, cell.url ? 'wash' : 'text-ink']}
                 data-np-link={i === 0 ? '' : undefined}
-              ><span data-np-title={i === 0 ? '' : undefined}>{cell.title}</span></a>
+              ><span data-np-title={i === 0 ? '' : undefined} class={i === 0 ? 'np-line block truncate' : undefined}>{cell.title}</span></a>
             </dd>
-            <dd class="truncate text-sm text-sub min-[900px]:text-[15px]" title={cell.detail} data-np-detail={i === 0 ? '' : undefined}>{cell.detail}</dd>
+            <dd class="truncate text-sm text-sub min-[900px]:text-[15px]" title={cell.detail} data-np-detail={i === 0 ? '' : undefined}>
+              {i === 0 ? <span class="np-line block truncate">{cell.detail}</span> : cell.detail}
+            </dd>
           </div>
         ))}
       </dl>
@@ -181,8 +179,20 @@ const arrow = `arrow absolute top-1/2 flex h-22 w-10 -translate-y-1/2 cursor-poi
       // No aria-live: a per-minute announcement would be noise
       {
         const $ = (name) => document.querySelector(`[data-np-${name}]`);
-        const [labelLink, dot, label, link, title, detail] = ['label-link', 'dot', 'label', 'link', 'title', 'detail'].map($);
+        const [dot, label, link, title, detail] = ['dot', 'label', 'link', 'title', 'detail'].map($);
+        const lines = document.querySelectorAll('[data-np-cell] .np-line');
         let np;
+
+        // Hover scroll: each line that overflows gets its overflow as --np-shift and a 30px/s duration as --np-dur.
+        // A negative text-indent doesn't change scrollWidth, so this measures correctly even mid-scroll
+        function fit() {
+          for (const el of lines) {
+            const over = el.scrollWidth - el.clientWidth;
+            el.style.setProperty('--np-shift', over > 1 ? `${-over}px` : '0px');
+            el.style.setProperty('--np-dur', `${Math.max(over, 0) / 30}s`);
+          }
+        }
+        addEventListener('resize', fit);
         let timer;
 
         // One place for the track URL format
@@ -200,26 +210,31 @@ const arrow = `arrow absolute top-1/2 flex h-22 w-10 -translate-y-1/2 cursor-poi
         function render() {
           const playing = np.state === 'playing';
           dot.hidden = !playing;
-          label.textContent = playing ? 'Listening now' : 'Last played';
-          if (labelLink.href) labelLink.setAttribute('aria-label', `${label.textContent}: Spotify profile (opens in new tab)`);
+          if (playing) label.replaceChildren('Listening now');
+          else {
+            const time = document.createElement('time');
+            time.dateTime = np.playedAt;
+            time.textContent = ago(np.playedAt);
+            // The label is uppercase; the time keeps its lowercase "2m ago"
+            time.className = 'normal-case';
+            label.replaceChildren('Last played · ', time);
+          }
 
           link.href = trackLink(np);
           link.target = '_blank';
           link.rel = 'noopener noreferrer';
           link.title = title.textContent = np.track;
           link.setAttribute('aria-label', `${np.track} (opens in new tab)`);
-          link.classList.replace('text-ink', 'wash');
+          // Adding .wash adds its transition while background-position jumps from the default to 100% 0,
+          // which would sweep on every load. Apply it with no transition so only hover and focus sweep
+          const swapped = link.classList.replace('text-ink', 'wash');
+          if (swapped) link.style.transition = 'none';
           // BaseLayout sizes washes present at load; this one changes with every track
           link.style.setProperty('--wash-size', link.offsetWidth + link.offsetHeight);
+          if (swapped) link.style.transition = '';
 
-          if (playing) detail.replaceChildren(np.artists);
-          else {
-            const time = document.createElement('time');
-            time.dateTime = np.playedAt;
-            time.textContent = ago(np.playedAt);
-            detail.replaceChildren(`${np.artists} · `, time);
-          }
-          detail.title = detail.textContent;
+          detail.title = detail.firstElementChild.textContent = np.artists;
+          fit();
         }
 
         // Keeps the last good data on a failed fetch, and recomputes the relative time either way.
@@ -300,6 +315,19 @@ const arrow = `arrow absolute top-1/2 flex h-22 w-10 -translate-y-1/2 cursor-poi
 
   @media (prefers-reduced-motion: reduce) {
     .dot, .dot > span, .arrow { transition: none; }
+  }
+
+  /* Listening cell: hovering the cell slides each overflowing line left at 30px/s until its end shows, then it stops.
+     The script sets --np-shift and --np-dur. text-indent, not transform: a transform can't move inline text,
+     and moving a whole child box would lose the ellipsis at rest. Leaving eases back to the start */
+  .np-line {
+    transition: text-indent 400ms ease-out;
+  }
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    [data-np-cell]:hover .np-line {
+      text-indent: var(--np-shift, 0px);
+      transition: text-indent var(--np-dur, 0s) linear 150ms;
+    }
   }
 
   /* Desktop: the bio matches the photo's top and height. Size containment drops its content height,

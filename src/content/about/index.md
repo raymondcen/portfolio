@@ -7,7 +7,6 @@ photos:
   - src: ../../assets/about/friends_outside_apt.jpg
   - src: ../../assets/about/marys_peak_sunset.jpg
 currently:
-  spotifyProfile: "https://open.spotify.com/user/3134nm7o5fcecrz5bun3ufb465ty"
   listening:
     title: "[Track]"
     detail: "[Artist]"
