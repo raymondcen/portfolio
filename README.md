@@ -1,10 +1,10 @@
 # rcen.dev
 
-Personal portfolio for Raymond Cen: https://rcen.dev
+Personal portfolio for Raymond Cen, live at **[rcen.dev](https://rcen.dev)**.
 
-## Stack
+![rcen.dev preview](public/og-image.png)
 
-Astro 7, Tailwind v4, content collections, Cloudflare Workers static assets.
+**Stack:** Astro 7, Tailwind CSS v4, TypeScript, Cloudflare Workers
 
 ## Run locally
 
@@ -17,19 +17,21 @@ npm run dev
 
 Open http://localhost:4321.
 
-## Commands
-
-- `npm run build`: build the site to `dist/`
-- `npm run preview`: serve the built site locally
-- `npx astro check`: type-check pages and content
-- `npx wrangler dev`: serve `dist/` the way Workers does
+| Command | Does |
+|---|---|
+| `npm run build` | Build the site to `dist/` |
+| `npm run preview` | Serve the built site |
+| `npx astro check` | Type-check pages and content |
+| `npm run full-prev` | Build, then run a local version of the full deployed site, Worker included, at http://127.0.0.1:8787 |
 
 ## Deploy
 
-Pushes to `main` build and deploy via Cloudflare Workers Builds. Other branches get preview URLs. CI runs `astro check` and build on pull requests and pushes to `main`.
+Hosted on Cloudflare Workers at rcen.dev. Pushes to `main` build and deploy through Cloudflare Workers Builds. Other branches get preview URLs.
 
-Built with AI assistance (Claude Code). CLAUDE.md holds the project conventions.
+## Design
+
+Decisions, tokens and behavior are documented in [`docs/design.md`](docs/design.md).
 
 ## License
 
-Code is MIT licensed. Site content and resume: all rights reserved.
+Code is MIT licensed. Site content, photos and resume: all rights reserved.
