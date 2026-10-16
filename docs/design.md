@@ -243,7 +243,7 @@ Arrows
 - No wrap-around: Previous is hidden on the first photo and Next on the last. If the hidden arrow had focus, focus moves to the track.
 
 Script
-- One inline island in `about.astro`, rendered only with 2 or more photos. It tracks the active index from the track's scroll position, updates the dot window, sizes and `aria-current` and the arrow end states, and wires arrows, dots and keys to `scrollTo`: `smooth`, or `auto` under reduced motion.
+- One inline island in `about.astro`, rendered only with 2 or more photos. It tracks the active index from the track's scroll position, updates the dot window, sizes and `aria-current` and the arrow end states, and wires arrows, dots and keys to `scrollTo`: `smooth`, or `auto` under reduced motion. Hiding the tab mid-transition halts the smooth scroll between two photos, so when the tab is visible again the track jumps (`instant`) to the nearest photo.
 - Without JS the photos still swipe and scroll, and the dots and arrows stay `hidden`.
 
 **Resume**

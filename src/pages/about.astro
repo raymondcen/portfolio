@@ -165,6 +165,12 @@ const arrow = `arrow absolute top-1/2 flex h-22 w-10 -translate-y-1/2 cursor-poi
           e.preventDefault();
           go(active + (e.key === 'ArrowLeft' ? -1 : 1));
         });
+        // Hiding the tab mid-transition halts the smooth scroll between two photos, and the snap doesn't resume.
+        // On return, jump to the nearest photo
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible')
+            track.scrollTo({ left: Math.round(track.scrollLeft / track.clientWidth) * track.clientWidth, behavior: 'instant' });
+        });
         prev.addEventListener('click', () => go(active - 1));
         next.addEventListener('click', () => go(active + 1));
         dots.forEach((dot, j) => dot.addEventListener('click', () => go(j)));
