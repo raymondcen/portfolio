@@ -74,6 +74,8 @@ async function nowPlaying(env: Env): Promise<NowPlaying> {
         : shape('recent', data.item, data.context, new Date(data.timestamp).toISOString());
     }
   } else if (current.status !== 204) {
+    throw new Error(`currently-playing ${current.status}`);
+  }
 
   const recent = await fetch(`${API}/recently-played?limit=1`, { headers });
   if (!recent.ok) throw new Error(`recently-played ${recent.status}`);
