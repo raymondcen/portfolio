@@ -64,13 +64,16 @@ async function nowPlaying(env: Env): Promise<NowPlaying> {
   if (current.status === 200) {
     const data = (await current.json()) as {
       is_playing: boolean;
+      timestamp: number;
       item: SpotifyTrack | null;
       context: SpotifyContext;
     };
-    if (data.is_playing && data.item?.type === 'track') return shape('playing', data.item, data.context, null);
+    if (data.item?.type === 'track') {
+      return data.is_playing
+        ? shape('playing', data.item, data.context, null)
+        : shape('recent', data.item, data.context, new Date(data.timestamp).toISOString());
+    }
   } else if (current.status !== 204) {
-    throw new Error(`currently-playing ${current.status}`);
-  }
 
   const recent = await fetch(`${API}/recently-played?limit=1`, { headers });
   if (!recent.ok) throw new Error(`recently-played ${recent.status}`);
