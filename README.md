@@ -4,7 +4,7 @@ Personal portfolio for Raymond Cen, live at **[rcen.dev](https://rcen.dev)**.
 
 ![rcen.dev preview](public/og-image.png)
 
-**Stack:** Astro 7, Tailwind CSS v4, TypeScript, Cloudflare Workers
+[![Stack: Astro, Tailwind CSS, TypeScript, Cloudflare Workers](https://skillicons.dev/icons?i=astro,tailwind,ts,workers)](https://skillicons.dev)
 
 ## Run locally
 
