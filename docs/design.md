@@ -42,7 +42,7 @@ Sitemap: `/`, `/experience`, `/projects`, `/resume`, `/about`, `/resume.pdf`, `/
 | Service | Role in this site |
 |---|---|
 | **GitHub** | Source repo. `main` is production. MIT license for code; written content and resume all rights reserved. |
-| **Cloudflare Workers** | Hosting with static assets plus one module Worker (`worker/index.ts`, set as `main` in `wrangler.jsonc`). Assets are served from `dist` through the `ASSETS` binding and unknown routes get `404.html`. `run_worker_first: ["/api/*"]` means only `/api/*` requests invoke the Worker; every page request is served straight from assets. No Astro adapter: pages stay static. The Worker serves `/api/now-playing` (section 4). Secrets: `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET` and `SPOTIFY_REFRESH_TOKEN`, set with `npx wrangler secret put` in production and in `.dev.vars` (gitignored, see `.dev.vars.example`) locally. Worker types come from `npx wrangler types worker/worker-configuration.d.ts`; `worker/` has its own `tsconfig.json` and is excluded from the root one so `astro check` stays clean. Workers Builds is connected to the GitHub repo; every push to `main` runs build `npm run build` and deploy `npx wrangler deploy`. Non-production branches get preview URLs from Workers Builds. Free tier, global CDN, automatic HTTPS. Backend features (Workers AI, KV, D1, R2, Cron Triggers) can be added later without migrating. |
+| **Cloudflare Workers** | Hosting with static assets plus one module Worker (`worker/index.ts`, set as `main` in `wrangler.jsonc`). Assets are served from `dist` through the `ASSETS` binding and unknown routes get `404.html`. `run_worker_first: ["/api/*"]` means only `/api/*` requests invoke the Worker; every page request is served straight from assets. No Astro adapter: pages stay static. The Worker serves `/api/now-playing` (section 4). Secrets: `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET` and `SPOTIFY_REFRESH_TOKEN`, set with `npx wrangler secret put` in production and in `.dev.vars` (gitignored, see `.dev.vars.example`) locally. Worker types come from `npx wrangler types worker/worker-configuration.d.ts`; `worker/` has its own `tsconfig.json` and is excluded from the root one so `astro check` stays clean. Workers Builds is connected to the GitHub repo; every push to `main` runs build `npm run build` and deploy `npx wrangler deploy`. Non-production branches get preview URLs from Workers Builds. Free tier, global CDN, automatic HTTPS. KV namespace `NOW_PLAYING` holds the last track the Worker saw (section 4); create it with `npx wrangler kv namespace create NOW_PLAYING` and put its id in `wrangler.jsonc`. Other backend features (Workers AI, D1, R2, Cron Triggers) can be added later without migrating. |
 | **Cloudflare Registrar** | Domain purchase at cost. Same account as Workers, so DNS and the SSL certificate configure automatically when the custom domain is added to the Worker. |
 | **Cloudflare Web Analytics** | Visitor counts and referrers (useful for seeing whether recruiters arrive from LinkedIn or a resume link). Enabled from the Cloudflare dashboard. No cookies and no banner required. |
 | **Cloudflare Email Routing** | Forwards a `@rcen.dev` alias to the personal inbox, so the personal address never appears on the site. If the alias draws spam, disable it and create a new one. Free, same account. See "Email spam protection" in section 4. |
@@ -56,7 +56,7 @@ Sitemap: `/`, `/experience`, `/projects`, `/resume`, `/about`, `/resume.pdf`, `/
 
 ### Not used
 
-No backend beyond the `/api/now-playing` Worker route. No database, CMS, contact form, UI component library, animation library (Framer Motion, GSAP) or dark mode. Contact is the mailto link in the footer.
+No backend beyond the `/api/now-playing` Worker route and its one KV key. No database, CMS, contact form, UI component library, animation library (Framer Motion, GSAP) or dark mode. Contact is the mailto link in the footer.
 
 ## 3. Design tokens
 
@@ -208,13 +208,13 @@ Currently strip
 - With `spotifyProfile` set, the Listening label is a link to it: `.wash`, the site focus ring, new tab, `aria-label` "{label}: Spotify profile (opens in new tab)".
 
 Live Listening cell
-- One `is:inline` script, rendered with the strip. It reads `/api/now-playing` on load, then every 60s while `document.visibilityState` is `visible`. Polling stops while the tab is hidden, and a fetch runs right away when it is visible again.
+- One `is:inline` script, rendered with the strip. It reads `/api/now-playing` on load, then every 30s while `document.visibilityState` is `visible`. Polling stops while the tab is hidden, and a fetch runs right away when it is visible again.
 - Hooks: `data-np-label-link`, `data-np-dot`, `data-np-label`, `data-np-link`, `data-np-title` and `data-np-detail`.
 - State `playing`: label "Listening now" with a 7px solid `selected` dot before it. Detail is the artists.
 - State `recent`: label "Last played". Detail is "{artists} · {relative time}" with the time in `<time datetime>`: "just now" under 1 minute, then "{n}m ago", "{n}h ago", "{n}d ago". Recomputed on every tick.
 - The main line becomes a `.wash` link to the track, new tab, `aria-label` "{track} (opens in new tab)". `trackLink({ trackId, trackUrl, playlistId })` holds the URL format: with `playlistId`, `https://open.spotify.com/playlist/{playlistId}?highlight=spotify:track:{trackId}`; without, `trackUrl`. The script sets `--wash-size` itself since BaseLayout only sizes washes present at load.
 - `title` on the main line and detail follows the visible text.
-- A failed fetch, a non-JSON body or state `error` changes nothing: the fallback stays, or the last good data stays with its time recomputed.
+- A failed fetch, a non-JSON body or state `error` keeps the fallback, or the last good data with its time recomputed. If that data is `playing`, it becomes `recent` with `playedAt` set to now, so "Listening now" never sticks.
 - No `aria-live`: a per-minute announcement would be noise.
 - `astro dev` has no `/api` route, so it only shows the fallback. Test with `npm run build && npx wrangler dev` and a filled `.dev.vars`.
 
@@ -319,7 +319,8 @@ Scrapers harvest addresses from `mailto:` links and plain text in HTML. Approach
 **Now-playing endpoint**
 `GET /api/now-playing` (`worker/index.ts`) feeds the Listening cell of the About "Currently" strip. Other methods get 405; other `/api/*` paths get a JSON 404.
 - Auth: Spotify Authorization Code flow with a client secret, scopes `user-read-currently-playing user-read-recently-played`. `npm run spotify:auth` runs once locally to get the refresh token (redirect URI `http://127.0.0.1:8888/callback`). The Worker trades the refresh token for an access token and caches it in module scope until 60s before it expires.
-- Logic: call `/me/player/currently-playing`. A track with `is_playing: true` gives state `playing`. Anything else (204, paused, episode, ad, null item) falls back to `/me/player/recently-played?limit=1` and gives state `recent` with `playedAt`.
+- Logic: call `/me/player/currently-playing`. A track with `is_playing: true` gives state `playing`. A paused track gives state `recent` with `playedAt` from `timestamp`. Anything else (204, episode, ad, null item) compares the KV entry below with `/me/player/recently-played?limit=1` (`played_at`) and returns the newer as `recent`, or whichever exists. A paused song is never replaced by an older one after Spotify drops the session.
+- KV: binding `NOW_PLAYING`, key `last`, `{ trackId, track, artists, trackUrl, playlistId, playing, at }`. Saved whenever currently-playing returns a track, only when `trackId` or `playing` changed. `at` (ms) is now when playing starts, `timestamp` for a pause. A KV failure is logged and the endpoint continues with recently-played alone.
 - Response: `{ state, track, artists, trackId, trackUrl, playlistId, playedAt }`. `artists` is the names joined with ", ". `trackUrl` is the track's `external_urls.spotify`. `playlistId` is the id from `context.uri` when `context.type` is `playlist`, else null. `playedAt` is null while playing.
-- Caching: JSON is stored in `caches.default` keyed on the request URL for 30s with `Cache-Control: public, max-age=30`.
+- Caching: JSON is stored in `caches.default` keyed on the request URL for 15s with `Cache-Control: public, max-age=15`.
 - Errors: any Spotify failure or missing secret returns 503 `{ "state": "error" }`, cached 10s. Tokens and Spotify error bodies are never exposed.

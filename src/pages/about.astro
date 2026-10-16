@@ -222,19 +222,22 @@ const arrow = `arrow absolute top-1/2 flex h-22 w-10 -translate-y-1/2 cursor-poi
           detail.title = detail.textContent;
         }
 
-        // Keeps the last good data on a failed fetch, and recomputes the relative time either way
+        // Keeps the last good data on a failed fetch, and recomputes the relative time either way.
+        // A failure while playing turns it into "Last played" now, so "Listening now" never sticks.
         async function tick() {
+          let data;
           try {
-            const data = await (await fetch('/api/now-playing')).json();
-            if (data.state === 'playing' || data.state === 'recent') np = data;
+            data = await (await fetch('/api/now-playing')).json();
           } catch {}
+          if (data?.state === 'playing' || data?.state === 'recent') np = data;
+          else if (np?.state === 'playing') np = { ...np, state: 'recent', playedAt: new Date().toISOString() };
           if (np) render();
         }
 
-        // Poll every 60s only while visible
+        // Poll every 30s only while visible
         function schedule() {
           clearInterval(timer);
-          if (document.visibilityState === 'visible') timer = setInterval(tick, 60000);
+          if (document.visibilityState === 'visible') timer = setInterval(tick, 30000);
         }
         document.addEventListener('visibilitychange', () => {
           if (document.visibilityState === 'visible') tick();

@@ -57,6 +57,34 @@ function shape(
   };
 }
 
+// Last track the Worker saw, so a pause survives Spotify dropping the session.
+// "at" is when playing started, or the pause timestamp.
+type Last = Omit<NowPlaying, 'state' | 'playedAt'> & { playing: boolean; at: number };
+
+const kvError = (err: unknown) => console.error('kv failed:', err instanceof Error ? err.message : err);
+
+// KV failures are logged and ignored so the endpoint never depends on them
+async function recall(env: Env): Promise<Last | null> {
+  try {
+    return await env.NOW_PLAYING.get<Last>('last', 'json');
+  } catch (err) {
+    kvError(err);
+    return null;
+  }
+}
+
+// Writes only when the track or the playing flag changed, to keep writes low
+async function remember(env: Env, np: NowPlaying, playing: boolean, at: number): Promise<void> {
+  try {
+    const last = await env.NOW_PLAYING.get<Last>('last', 'json');
+    if (last?.trackId === np.trackId && last.playing === playing) return;
+    const { state, playedAt, ...fields } = np;
+    await env.NOW_PLAYING.put('last', JSON.stringify({ ...fields, playing, at } satisfies Last));
+  } catch (err) {
+    kvError(err);
+  }
+}
+
 async function nowPlaying(env: Env): Promise<NowPlaying> {
   const headers = { Authorization: `Bearer ${await accessToken(env)}` };
 
@@ -69,22 +97,30 @@ async function nowPlaying(env: Env): Promise<NowPlaying> {
       context: SpotifyContext;
     };
     if (data.item?.type === 'track') {
-      return data.is_playing
+      const np = data.is_playing
         ? shape('playing', data.item, data.context, null)
         : shape('recent', data.item, data.context, new Date(data.timestamp).toISOString());
+      await remember(env, np, data.is_playing, data.is_playing ? Date.now() : data.timestamp);
+      return np;
     }
   } else if (current.status !== 204) {
     throw new Error(`currently-playing ${current.status}`);
   }
 
-  const recent = await fetch(`${API}/recently-played?limit=1`, { headers });
+  // No track now: the newer of the stored track and recently-played wins
+  const [stored, recent] = await Promise.all([recall(env), fetch(`${API}/recently-played?limit=1`, { headers })]);
   if (!recent.ok) throw new Error(`recently-played ${recent.status}`);
   const data = (await recent.json()) as {
     items: { track: SpotifyTrack; played_at: string; context: SpotifyContext }[];
   };
   const last = data.items[0];
-  if (!last) throw new Error('no recent tracks');
-  return shape('recent', last.track, last.context, last.played_at);
+  const played = last && shape('recent', last.track, last.context, last.played_at);
+  if (stored && (!played || stored.at > Date.parse(played.playedAt!))) {
+    const { playing, at, ...fields } = stored;
+    return { state: 'recent', ...fields, playedAt: new Date(at).toISOString() };
+  }
+  if (!played) throw new Error('no recent tracks');
+  return played;
 }
 
 function json(body: unknown, status: number, maxAge: number): Response {
@@ -112,7 +148,7 @@ export default {
       if (!env.SPOTIFY_CLIENT_ID || !env.SPOTIFY_CLIENT_SECRET || !env.SPOTIFY_REFRESH_TOKEN) {
         throw new Error('missing secret');
       }
-      res = json(await nowPlaying(env), 200, 30);
+      res = json(await nowPlaying(env), 200, 15);
     } catch (err) {
       console.error('now-playing failed:', err instanceof Error ? err.message : err);
       res = json({ state: 'error' }, 503, 10);

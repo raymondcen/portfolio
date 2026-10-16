@@ -1,17 +1,28 @@
 {
-  "name": "portfolio",
-  "main": "./worker/index.ts",
-  "compatibility_date": "2026-10-05",
-  "workers_dev": false,
-  "preview_urls": true,
-  "previews": {},
-  "routes": [
-    { "pattern": "rcen.dev", "custom_domain": true }
-  ],
-  "assets": {
-    "directory": "./dist",
-    "binding": "ASSETS",
-    "not_found_handling": "404-page",
-    "run_worker_first": ["/api/*"]
-  }
+	"name": "portfolio",
+	"main": "./worker/index.ts",
+	"compatibility_date": "2026-10-05",
+	"workers_dev": false,
+	"preview_urls": true,
+	"previews": {},
+	"routes": [
+		{
+			"pattern": "rcen.dev",
+			"custom_domain": true
+		}
+	],
+	"kv_namespaces": [
+		{
+			"binding": "NOW_PLAYING",
+			"id": "8c9aa066f5b146789fb89269b85cc8ee"
+		}
+	],
+	"assets": {
+		"directory": "./dist",
+		"binding": "ASSETS",
+		"not_found_handling": "404-page",
+		"run_worker_first": [
+			"/api/*"
+		]
+	}
 }
