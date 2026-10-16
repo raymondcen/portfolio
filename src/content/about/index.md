@@ -1,11 +1,13 @@
 ---
 photos:
   - src: ../../assets/about/selfie.jpg
-  - src: ../../assets/about/mnt_pisgah_sunrise.jpg
+  - src: ../../assets/about/pisgah_view.jpg
+  - src: ../../assets/about/pisgah_group_photo.jpg
   - src: ../../assets/about/post_hike_brunch.jpg
   - src: ../../assets/about/osu_football_game.jpeg
-  - src: ../../assets/about/friends_outside_apt.jpg
   - src: ../../assets/about/marys_peak_sunset.jpg
+  - src: ../../assets/about/group_walk_sunset.jpg
+  - src: ../../assets/about/bald_hill.jpg
 currently:
   listening:
     title: "Waiting..."
