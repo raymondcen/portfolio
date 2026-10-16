@@ -39,6 +39,7 @@ If a request conflicts with these, say so before changing anything.
 - Preview built dist the way Workers serves it: `npx wrangler dev`
 - Test the API: `npm run build && npx wrangler dev`, then open http://127.0.0.1:8787/api/now-playing. Returns 503 `{"state":"error"}` until .dev.vars has all three Spotify keys
 - Spotify refresh token (one time): put SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET in .dev.vars (copy .dev.vars.example), then `npm run spotify:auth`
+- Testing the Spotify strip end to end (cron, KV, test cases): docs/design.md section 5
 - Worker types: `npx wrangler types worker/worker-configuration.d.ts` after changing wrangler.jsonc or .dev.vars keys
 
 Run the build and check before saying a task is done.

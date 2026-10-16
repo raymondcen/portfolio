@@ -325,3 +325,37 @@ Scrapers harvest addresses from `mailto:` links and plain text in HTML. Approach
 - Response: `{ state, track, artists, trackId, trackUrl, playlistId, playedAt }`. `artists` is the names joined with ", ". `trackUrl` is the track's `external_urls.spotify`. `playlistId` is the id from `context.uri` when `context.type` is `playlist`, else null. `playedAt` is null while playing.
 - Caching: JSON is stored in `caches.default` keyed on the request URL for 15s with `Cache-Control: public, max-age=15`.
 - Errors: any Spotify failure or missing secret returns 503 `{ "state": "error" }`, cached 10s. Tokens and Spotify error bodies are never exposed.
+
+## 5. Testing the Spotify strip locally
+
+**1. Setup (first time only)**
+1. `cp .dev.vars.example .dev.vars`, then fill in `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET` from the Spotify developer dashboard. The app there must list the redirect URI `http://127.0.0.1:8888/callback`.
+2. `npm run spotify:auth` writes `SPOTIFY_REFRESH_TOKEN` into `.dev.vars`.
+3. `.dev.vars` is gitignored. Never commit it or paste its values into a terminal command.
+
+**2. Run the Worker locally**
+1. `npm run build && npx wrangler dev`, then open `http://localhost:8787`.
+2. `astro dev` has no `/api` route, so the Listening cell only shows the frontmatter fallback there.
+3. `wrangler dev` reads `.dev.vars` and uses a local KV store that starts empty, not the production one.
+
+**3. Check the endpoint**
+1. Open `http://localhost:8787/api/now-playing`.
+2. Add `?t=<any number>` to skip the edge cache. The cache is keyed on the full URL (15s for data, 10s for errors).
+3. Errors print in the `wrangler dev` terminal as `now-playing failed: <reason>` or `kv failed: <reason>`, and from the cron as `scheduled failed: <reason>`.
+
+**4. Trigger the cron by hand**
+1. The schedule never runs on its own in `wrangler dev`. Open `http://localhost:8787/cdn-cgi/local/scheduled` to run it once.
+2. Inspect local KV: `npx wrangler kv key get last --binding NOW_PLAYING --local`
+
+**5. Test cases, in order**
+1. Playing: play a track, hit the cron route, then the endpoint. Expect state `playing`.
+2. Paused: pause, hit the cron route, wait 15s or change `?t=`, then the endpoint. Expect `recent` with the paused track and the pause time as `playedAt`.
+3. Session dropped: play a track for at least a minute, hit the cron route, pause, close Spotify and wait until currently-playing stops returning it. Expect `recent` with that track (from KV), not an older one.
+4. Failure: put a wrong refresh token in `.dev.vars` and restart `wrangler dev` (the access token stays cached in memory until then). Expect 503 `{ "state": "error" }` and the About page keeping the frontmatter fallback.
+5. About page: at `http://localhost:8787/about`, check the label, dot, track link and relative time, and that "Listening now" switches to "Last played" within one 30s poll of a pause.
+
+**6. Production notes**
+1. The cron only runs on the deployed production version, not on preview URLs. Previews read the same KV namespace.
+2. Update production secrets with `npx wrangler secret bulk .dev.vars`, never by pasting values.
+3. Live logs: `npx wrangler tail`. Stored value: `npx wrangler kv key get last --binding NOW_PLAYING --remote`
+4. Past cron runs: Workers & Pages > portfolio > Settings > Trigger Events > View events.
