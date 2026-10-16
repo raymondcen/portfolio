@@ -1,6 +1,6 @@
 # Design: rcen.dev
 
-This file is the source of truth for stack, tokens and behavior. Images and PDFs in docs/ are layout references. docs/wireframe.pdf still shows Projects as an accordion on desktop; section 4 supersedes it. It also shows a Home item in the home nav; the Nav section in section 4 supersedes it.
+This file documents the site as built and is the source of truth for stack, tokens and behavior. Images and PDFs in docs/ are layout references. docs/wireframe.pdf still shows Projects as an accordion on desktop; section 4 supersedes it. It also shows a Home item in the home nav; the Nav section in section 4 supersedes it. Open work is tracked in GitHub Issues.
 
 ## 1. Decisions
 
@@ -14,9 +14,9 @@ The original plan described a single-page landing. The wireframes replace it.
 | Featured cards plus "More projects" | All projects in one list: split view (list plus detail panel) on desktop, accordion on mobile |
 | `/projects/[slug]` case study pages | None. Details open in the detail panel on desktop and expand in place on mobile |
 | Skills and Contact sections | Omitted. Contact is the footer icons |
-| About section on the landing page | Its own `/about` page: split view with a photo carousel on the left and the bio panel on the right, one column below 900px |
+| About section on the landing page | Its own `/about` page: photo carousel on the left, wider bio panel on the right and a "Currently" strip below both; one column below 900px |
 | Plain color fade on hover | Diagonal color wash on every hover |
-| Cloudflare Pages | Cloudflare Workers (static assets plus one Worker route under `/api/*`) |
+| Cloudflare Pages | Cloudflare Workers (static assets plus one Worker route under `/api/*`), with room for the chatbot in section 6 |
 | Novak Lab capstone listed under Experience | Capstone on Projects only; Experience lists paid work |
 
 Unchanged: Astro, Tailwind, content collections, SEO, accessibility and performance targets.
@@ -29,34 +29,34 @@ Sitemap: `/`, `/experience`, `/projects`, `/resume`, `/about`, `/resume.pdf`, `/
 
 | Tool | Role in this site |
 |---|---|
-| **Astro** | Site framework. Builds every page to static HTML at build time. One `.astro` file per route: `index`, `experience`, `projects`, `resume`, `about`, `404`. About is driven by a Markdown collection entry (`src/content/about/index.md`), so its bio and photos can be edited without touching layout code. A shared `BaseLayout` holds the sticky header, footer icons, fonts and meta tags. Ships zero JavaScript unless a component opts in. The exceptions are the Projects desktop selection island, the footer email script and the About carousel island (section 4). The mobile accordion is native HTML. |
-| **Tailwind CSS** | All styling. Design tokens from section 3 go in the Tailwind theme (`bg`, `selected`, `ink`, `sub`, `panel`, `panel-2`, `divider`) so classes read `text-ink hover:text-selected`. Name the body text color `ink` in Tailwind: `text-base` is already Tailwind's default font-size class and would collide. The wash animation lives in one small custom CSS file because it uses gradients and masks Tailwind doesn't cover cleanly. Unused classes are stripped at build. The build inlines all CSS into each page (`build.inlineStylesheets: 'always'`) so back navigation never paints an unstyled frame while a separate stylesheet revalidates. |
+| **Astro** | Site framework. Builds every page to static HTML at build time. One `.astro` file per route: `index`, `experience`, `projects`, `resume`, `about`, `404`. About is driven by a Markdown collection entry (`src/content/about/index.md`), so its bio and photos can be edited without touching layout code. A shared `BaseLayout` holds the sticky header, footer icons, fonts and meta tags. Ships zero JavaScript unless a feature needs it. The scripts are: the BaseLayout wash sizing and footer email scripts, the Projects desktop selection script, the About carousel script, the About live Listening script and the About mobile marquee module (`src/scripts/marquee.ts`), all in section 4. Every other script is `is:inline`; the marquee is a bundled module. The mobile Projects accordion and the image popover are native HTML. |
+| **Tailwind CSS v4** | All styling, through `@tailwindcss/vite`. Design tokens from section 3 are `--color-*` variables in the `@theme` block of `src/styles/global.css` (`bg`, `selected`, `ink`, `sub`, `panel`, `panel-2`, `divider`), so classes read `text-ink bg-panel`. The body text color is named `ink`: `text-base` is already Tailwind's default font-size class and would collide. The wash classes (`.wash`, `.icon-wash`, `.btn-wash`), the marquee keyframes and the header, footer, wash and marquee variables also live in `global.css`, since they use gradients, masks and registered properties Tailwind doesn't cover cleanly. Page-specific CSS sits in each page's `<style>` block. Unused classes are stripped at build. The build inlines all CSS into each page (`build.inlineStylesheets: 'always'`) so back navigation never paints an unstyled frame while a separate stylesheet revalidates. |
 | **Astro Content Collections + Zod** | Projects and experience entries live as Markdown files in `src/content/projects/` and `src/content/experience/`, one file per entry. Schemas live in `src/content.config.ts`; each collection uses the glob loader on `**/*.md`, and the file name is the entry id (`data-slug` on the Projects rows and detail blocks). Projects frontmatter, required: `title`, `start`, `context` (one of `capstone`, `course`, `hackathon`, `personal`), `teamSize` (positive integer, 1 means solo), `summary`, `tags` (at least one), `status` (one of `complete`, `archived`, `in-progress`) and `order`. Optional: `end` (equal to `start` for a single-month project and shown as one date; absent means present), `contextDetail` (course number or event name and length), `teamNote` (nuance the number cannot carry), `role`, `metric` (prefix "Team result:" when it is not solely mine), `github`, `devpost`, `live` and `video` (URLs) and `image` (`{ src, alt }`, alt required whenever an image exists). Experience frontmatter, required: `title` (the role), `organization`, `location`, `start`, `type` (employment type, not displayed), `summary` (one line), `tags` (at least one) and `order`. Optional: `end` (absent means present), `teamSize`, `role` (assigned team role, distinct from the title) and `github`. Dates are quoted `"YYYY-MM"` strings, not Date objects: a parsed Date is UTC midnight and renders as the previous day in Pacific time, and YYYY-MM strings sort correctly as plain strings. An entry whose end is before its start fails. The `about` collection has one entry, `index.md`: its body is the bio and its frontmatter is `photos`, an array of `{ src, alt }` (`src` an image in `src/assets/about/`, `alt` optional) that defaults to empty, and an optional `currently` object for the About strip: `listening`, `watching`, `reading` and `hike`, each `{ title, detail, url }` with `url` optional. The body holds the expanded text: for projects one description paragraph followed by the role bullets, for experience the bullets. A Zod schema checks every file at build, so a missing title or broken date fails the build instead of shipping. The Projects and Experience pages loop over these collections. Adding a project means adding one file. |
-| **@astrojs/mdx** | Optional now. It was in the plan for case study pages, which were cut. Plain Markdown covers the expanded project text. Add MDX later only if an expanded project needs an embedded component such as a chart. |
 | **@iconify-json/lucide** | Lucide icon data, read at build time. No icon font, no icon integration and no runtime cost. `maskIcon` in `src/lib/icons.ts` turns an icon body into a data URI in `--icon`, used as a CSS mask: washed icons (footer, chevrons, external-link arrow, enlarge and close, About carousel arrows) paint the wash through it (section 4), and the Download PDF icon paints solid `currentColor` through it. The 嘉安 mark is not a Lucide icon: `BaseLayout` imports `src/assets/an.svg?raw` and inlines it. |
 | **@astrojs/sitemap** | Generates `sitemap.xml` at build from the routes. Paired with a static `robots.txt` in `public/`. Pages are indexable. `/404` passes `noindex` so `BaseLayout` emits `<meta name="robots" content="noindex">` and it stays out of the index. |
-| **Fontsource (Newsreader)** | Self-hosts the Newsreader font from the npm package instead of loading from Google. Import only weights 400, 400 italic (dates), 500 and 600. Faster and no third-party request. |
+| **Fontsource (Newsreader)** | Self-hosts the Newsreader font from the npm package instead of loading from Google. `global.css` imports only weights 400, 400 italic (dates), 500 and 600. Faster and no third-party request. |
+| **Wrangler** | Dev dependency. Local Worker preview (`npx wrangler dev`), secrets, KV and generated Worker types. |
 
 ### Hosting and services
 
 | Service | Role in this site |
 |---|---|
 | **GitHub** | Source repo. `main` is production. MIT license for code; written content and resume all rights reserved. |
-| **Cloudflare Workers** | Hosting with static assets plus one module Worker (`worker/index.ts`, set as `main` in `wrangler.jsonc`). Assets are served from `dist` through the `ASSETS` binding and unknown routes get `404.html`. `run_worker_first: ["/api/*"]` means only `/api/*` requests invoke the Worker; every page request is served straight from assets. No Astro adapter: pages stay static. The Worker serves `/api/now-playing` (section 4). Secrets: `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET` and `SPOTIFY_REFRESH_TOKEN`, set with `npx wrangler secret put` in production and in `.dev.vars` (gitignored, see `.dev.vars.example`) locally. Worker types come from `npx wrangler types worker/worker-configuration.d.ts`; `worker/` has its own `tsconfig.json` and is excluded from the root one so `astro check` stays clean. Workers Builds is connected to the GitHub repo; every push to `main` runs build `npm run build` and deploy `npx wrangler deploy`. Non-production branches get preview URLs from Workers Builds. Free tier, global CDN, automatic HTTPS. KV namespace `NOW_PLAYING` holds the last track the Worker saw (section 4); create it with `npx wrangler kv namespace create NOW_PLAYING` and put its id in `wrangler.jsonc`. A Cron Trigger (`* * * * *` under `triggers.crons`) runs the Worker's `scheduled()` handler every minute to keep that KV entry current (section 4). Other backend features (Workers AI, D1, R2) can be added later without migrating. |
+| **Cloudflare Workers** | Hosting with static assets plus one module Worker (`worker/index.ts`, set as `main` in `wrangler.jsonc`). The Worker serves the custom domain `rcen.dev` (`routes`, `custom_domain: true`); `workers_dev` is off and `preview_urls` is on. Observability logs are enabled and persisted. Assets are served from `dist` through the `ASSETS` binding and unknown routes get `404.html`. `run_worker_first: ["/api/*"]` means only `/api/*` requests invoke the Worker; every page request is served straight from assets. No Astro adapter: pages stay static. The Worker serves `/api/now-playing` (section 4). Secrets: `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET` and `SPOTIFY_REFRESH_TOKEN`, set with `npx wrangler secret put` in production and in `.dev.vars` (gitignored, see `.dev.vars.example`) locally. Worker types come from `npx wrangler types worker/worker-configuration.d.ts`; `worker/` has its own `tsconfig.json` and is excluded from the root one so `astro check` stays clean. Workers Builds is connected to the GitHub repo; every push to `main` runs build `npm run build` and deploy `npx wrangler deploy`. Non-production branches get preview URLs from Workers Builds. Free tier, global CDN, automatic HTTPS. KV namespace `NOW_PLAYING` holds the last track the Worker saw (section 4); create it with `npx wrangler kv namespace create NOW_PLAYING` and put its id in `wrangler.jsonc`. A Cron Trigger (`* * * * *` under `triggers.crons`) runs the Worker's `scheduled()` handler every minute to keep that KV entry current (section 4). |
 | **Cloudflare Registrar** | Domain purchase at cost. Same account as Workers, so DNS and the SSL certificate configure automatically when the custom domain is added to the Worker. |
 | **Cloudflare Web Analytics** | Visitor counts and referrers (useful for seeing whether recruiters arrive from LinkedIn or a resume link). Enabled from the Cloudflare dashboard. No cookies and no banner required. |
 | **Cloudflare Email Routing** | Forwards a `@rcen.dev` alias to the personal inbox, so the personal address never appears on the site. If the alias draws spam, disable it and create a new one. Free, same account. See "Email spam protection" in section 4. |
-| **GitHub Actions** | One workflow on pull requests and pushes to `main`: `astro check` (type-checks content collections), `npm run build` (catches build errors before Cloudflare deploys) and optionally Lighthouse CI against the performance targets. Deployment itself is handled by Cloudflare, not Actions. |
+| **GitHub Actions** | One workflow (`.github/workflows/ci.yml`) on pull requests and pushes to `main`, on the Node version in `.nvmrc` (22): `npm ci`, `npx astro check` (type-checks content collections), `npm run build` (catches build errors before Cloudflare deploys) and Lighthouse CI (`@lhci/cli@0.15.x autorun`). `lighthouserc.json` runs every page in `dist` 3 times with the desktop preset and warns, without failing, below these scores: performance 0.9, accessibility 0.95, best practices 0.9, SEO 0.9. Reports go to temporary public storage. Deployment itself is handled by Cloudflare, not Actions. |
 
 ### Static files in `public/`
 
 - `resume.pdf`: embedded on `/resume` and used by the Download button
 - `og-image.png` (1200x630): preview image when the site is shared on LinkedIn
-- `robots.txt`, `favicon.svg`, `favicon-32.png`, `apple-touch-icon.png`
+- `robots.txt` (allows everything, points to `sitemap-index.xml`), `favicon.svg`, `favicon-32.png`, `apple-touch-icon.png`
 
 ### Not used
 
-No backend beyond the `/api/now-playing` Worker route, its one KV key and the per-minute cron that updates it. No database, CMS, contact form, UI component library, animation library (Framer Motion, GSAP) or dark mode. Contact is the mailto link in the footer.
+No backend beyond the `/api/now-playing` Worker route, its one KV key and the per-minute cron that updates it. No Astro adapter, MDX, database, CMS, contact form, UI component library, animation library (Framer Motion, GSAP), background animation or dark mode. Contact is the mailto link in the footer.
 
 ## 3. Design tokens
 
@@ -70,7 +70,13 @@ No backend beyond the `/api/now-playing` Worker route, its one KV key and the pe
 | panel-2 | `#DEDDD7` | Image slot, PDF border |
 | divider | `#CFCEC6` | Lines between entries |
 
-Font: Newsreader (serif), Georgia fallback.
+Font: `--font-serif: "Newsreader", Georgia, "Times New Roman", serif`. `body` uses `bg-bg font-serif text-ink`.
+
+Breakpoints: Tailwind's `sm` (40rem, 640px) for header, footer, nav and 404 sizes, and a custom `min-[900px]` for every layout switch (Projects split view, About row and strip, Resume embed, viewport lock).
+
+Focus ring: every interactive element uses `focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-selected` (a 2px `selected` outline 4px out). Exceptions: the carousel dots have no offset and the playlist link is inset (`-outline-offset-2`).
+
+Scrollbars inside panels: `scrollbar-width: thin`, thumb `#B9B8B3`, transparent track.
 
 ## 4. Implementation notes
 
@@ -111,18 +117,20 @@ Overflow rules
 - Content guideline per project: one description paragraph, two bullets, one metric, about eight tags or fewer.
 
 Behavior
-- Selection needs a small island script (vanilla JS or an Astro `client:load` component). Keep it small: click to select, update `aria-current`, swap the detail content and reset its scroll.
-- Render every project's detail block in the static HTML and toggle visibility, so content works without JavaScript and stays indexable. Without JS, show all detail blocks stacked.
+- Selection is one small `is:inline` vanilla script: click to select, update `aria-current`, set `hidden` on every other detail block, reset the panel's scroll and move the highlight. A ResizeObserver on the list and every row realigns the highlight without animating on resize, the 900px switch and font load.
+- Every project's detail block is in the static HTML and the script toggles visibility, so content works without JavaScript and stays indexable. Without JS all detail blocks show stacked, and a `<noscript>` style drops the viewport lock so the page scrolls.
 - No deep links: the URL stays `/projects` with no hash. The first project is selected on every load.
 
 **Projects: mobile (< 900px)**
-- Unchanged: the native `<details name="projects">` accordion from the wireframe, with normal page scrolling. Sharing a `name` gives one-open-at-a-time with zero JavaScript in current Chrome, Safari and Firefox. Older browsers allow several open at once, which is an acceptable fallback.
+- The native `<details name="projects">` accordion from the wireframe, with normal page scrolling. Sharing a `name` gives one-open-at-a-time with zero JavaScript in current Chrome, Safari and Firefox. Older browsers allow several open at once, which is an acceptable fallback.
+- Layout: `px-4 pb-4` around one `panel` box, radius 10px, 16px horizontal padding. Items are split by `divider` lines, none after the last.
+- Summary: 16px vertical padding, the same title, dates and summary stack as a desktop row, and a 24px `chevron-down` on the right. Hovering anywhere on the summary sweeps the title. The open item's body (image, description, bullets, metric, tags, links) uses the same component as the desktop panel (`ProjectDetail.astro`) with a 16px gap and 24px bottom padding.
 - The first project is open on load. No hash links to individual projects.
 - Open item: title and chevron in `selected` `#006930`, like the selected row on desktop. Closed items use the `.wash` hover.
 - The viewport lock does not apply below 900px.
 
 **Diagonal wash animation**
-Every hover color change uses a diagonal wash: green `#006930` sweeps over ink `#171717` at a 45° angle, bottom-left to top-right. Unhovering reverses the sweep. Applies to nav items, Back, footer icons, project titles and chevrons, project links and their arrows, the image enlarge and close icons, the About carousel arrows, the About "Currently" links and the Download PDF fill.
+Every hover color change uses a diagonal wash: green `#006930` sweeps over ink `#171717` at a 45° angle, bottom-left to top-right. Unhovering reverses the sweep. Applies to nav items, Back, footer icons, project titles and chevrons, project links and their arrows, the image enlarge and close icons, the About carousel arrows, the About "Currently" links (titles with a `url`, the live track and the playlist name), the Resume "Open PDF" link and the Download PDF fill.
 
 How it works: a 45° linear gradient with a hard color stop (green on the bottom-left half, ink on the top-right half) sits on a background twice the element's size. At rest `background-position: 100% 0` shows ink, with the edge on the bottom-left corner. Hover slides it to `0 100%` so the green half crosses the element and the edge ends on the top-right corner.
 
@@ -148,7 +156,7 @@ Constant speed: the edge moves at the same pixel speed on every element, so shor
 }
 ```
 
-- Text (nav, Back, project titles, About "Currently" links): the `.wash` pattern above.
+- Text (nav, Back, project titles, project links, About "Currently" links, Open PDF): the `.wash` pattern above. On Projects rows and summaries, hover or focus anywhere on the button or summary sweeps the title. In the About strip the `.wash` sits on the text span inside the link, and the link's hover or focus sweeps it.
 - Download PDF button: same gradient and direction (bottom left to top right) on the button fill without `background-clip: text`; label stays `#F7F6F0`. Its download icon is a `maskIcon` span filled `bg-current`, so it matches the label instead of washing.
 - Icons: SVG strokes can't use `background-clip`. Put the gradient on a wrapper and use the icon as a CSS `mask-image`. Same direction: green enters from the bottom left.
 - Every washed icon is `.icon-wash` in global.css: footer icons, Back chevron, mobile Projects chevron, project link arrows, the image enlarge and close icons and the About carousel chevrons. Each is an empty `aria-hidden` span whose mask is the Lucide icon body (or the 22 x 40 `tallChevron` path for the About arrows), read from `@iconify-json/lucide` by `maskIcon` in `src/lib/icons.ts` and turned into a data URI in `--icon`. Hover or keyboard focus of the parent link, button or summary triggers it. Footer icons are a fixed 24 x 24, so the wash size is the default 48.
@@ -157,15 +165,14 @@ Constant speed: the edge moves at the same pixel speed on every element, so shor
 - Back chevron: the same `.icon-wash`, inside the Back `.wash` link, so one diagonal edge crosses the chevron and then the word. `.wash > .icon-wash` sizes the chevron's gradient to twice the link's box and offsets it by the chevron's position in the link, so it paints the same gradient as the text. The ResizeObserver script measures the link's width and height and the chevron's offset (this includes the `-mx-2` negative margins) into `--wash-w`, `--wash-h`, `--icon-x` and `--icon-y`. The chevron uses the link's `--wash-duration`, so both move at the same speed and finish together. Only `--wash-p` transitions, so a new measurement (font load, resize) applies at once instead of sweeping at rest. Without JS the fallbacks reduce it to the chevron's own sweep.
 - Wrap hover in `@media (hover: hover)` so phone taps don't leave items stuck green.
 - Reduced motion: no sweep, instant color change.
-- Check that text stays selectable and that screen readers still read it. `color: transparent` with `background-clip: text` is fine for both, but verify in Safari.
-- Tune the angle, duration and stop softness in the browser. A slightly soft stop (for example `48%, 52%`) can look smoother than a hard edge on small text.
+- The stop is hard (`50%`) at 45°. `color: transparent` with `background-clip: text` keeps text selectable and readable by screen readers.
 
 **Experience**
 The Novak Lab capstone is shown under Projects only, not Experience.
 
-- The whole page scrolls with header and footer sticky. No `lockViewport` and no inner scroll box.
-- One `panel` card, centered, max-width 720px, radius 10px, padding 28px 32px.
-- Entries are ordered by `order` ascending. A `divider` line separates entries, with none after the last.
+- The whole page scrolls with header and footer sticky. No `lockViewport` and no inner scroll box. A screen-reader-only `<h1>Experience</h1>`.
+- `px-4 pb-4` around one `panel` card, centered, max-width 720px, radius 10px, padding 28px 32px at every width.
+- Entries are ordered by `order` ascending, 28px above and below each. A `divider` line separates entries, with none after the last.
 - Each entry is an `<article>` laid out as:
   ```
   Title                         Dates
@@ -174,13 +181,13 @@ The Novak Lab capstone is shown under Projects only, not Experience.
   One-line summary
   - Bullets
   ```
-  Row one: the role (`title`, 24px, 600, `ink`) on the left, dates (15px, `sub`, italic, same format as Projects) on the right. Row two: `organization` on the left, `location` on the right (both 15px, `sub`). Each row wraps when narrow, dropping its right item under the left.
+  Row one: the role (`title`, an `<h2>`, 24px, 600, `ink`) on the left, dates (15px, `sub`, italic, same format as Projects) on the right. Row two: `organization` on the left, `location` on the right (both 15px, `sub`). Each row wraps when narrow, dropping its right item under the left.
 - Then the one-line `summary` (17px, line-height 1.6, max-width 68ch), the body bullets styled like the Projects role bullets and tag pills identical to Projects.
-- `type` is not displayed.
+- `type`, `teamSize`, `role` and `github` are not displayed.
 - Nothing on the page is interactive: no hover effects and no JS.
 
 **About**
-There is no About wireframe. This section is the layout reference and supersedes the About frames in docs/wireframe.pdf. The page has three boxes and nothing else: a photo carousel, the bio panel and the "Currently" strip below them.
+There is no About wireframe. This section is the layout reference and supersedes the About frames in docs/wireframe.pdf. The page has three boxes and nothing else: a photo carousel on the left, the wider bio panel on the right and the "Currently" strip below them. A screen-reader-only `<h1>About</h1>` keeps the outline.
 
 Content
 - `src/content/about/index.md`. The Markdown body is the bio. `photos` in frontmatter lists the images in display order; files go in `src/assets/about/`.
@@ -196,7 +203,6 @@ Layout
 - The bio panel's top and height match the image. It has `contain: size`, so its text never sets the row height, and it stretches to the image column. If the text ever outgrows it, the panel scrolls (`overflow-y: auto`, thin scrollbar like Projects).
 - Bio panel: `panel` background, radius 10px, padding 28px 32px, 18px text, line-height 1.65, `ink`. Mobile: padding 16px 16px 20px, 16px text, line-height 1.6.
 - Mobile (< 900px): `px-4 pb-4`, one column with a 16px gap: carousel at full width, bio below at its natural height.
-- Keep clear space around all three boxes. A future background animation must never overlap them, the header or the footer. It is not built.
 
 Currently strip
 - Rendered only when `currently` exists in frontmatter. A `<section>` with a screen-reader-only `<h2>Currently</h2>`; the cells are a `<dl>`.
@@ -215,7 +221,7 @@ Live Listening cell
 - The main line becomes a link to the track with `.wash` on its title span, new tab, `aria-label` "{track} (opens in new tab)". The URL is `trackUrl`, the song itself. (A playlist URL with `?highlight=` used to scroll to the song; Spotify now only highlights it, so the playlist got its own link in the label.) The first `.wash` is applied with its transition off, so the title never sweeps on load; it sweeps only on hover and focus.
 - `title` on the main line and detail follows the visible text.
 - Mobile marquee (< 900px, no reduced motion): each line is also a `[data-marquee]` box, handled by `src/scripts/marquee.ts` (a bundled module script, reusable on any one-line clip box whose first child is the text). 400ms after `load` (and once fonts are ready), each line whose box overflows (`scrollWidth > clientWidth`) gets `.marquee` and an `aria-hidden` copy of its text (links in the copy get `tabindex="-1"`). The text and copy are `inline-block` with `--marquee-gap` (3rem, `:root` in global.css) between them, and both run `@keyframes marquee`: `translateX(calc(-100% - var(--marquee-gap)))`, linear, infinite, so the copy lands exactly where the text started and the loop has no visible reset. Duration is that distance over `SPEED` (30px/s, in the script), so every line moves at the same pace. Lines that fit stay still with no copy. A ResizeObserver on each box rechecks on resize and orientation change, and a MutationObserver on the text rechecks on live updates; a re-render with the same text leaves the loop running. Clicks on the moving title land on its link. Reduced motion or ≥ 900px: no copy, the ellipsis stays. The hover scroll below is desktop only (≥ 900px) so the two never run together.
-- Hover scroll (every cell, not only Listening; ≥ 900px only): each line is a clip box (`.scroll-clip`: the title link, the detail `dd`, and the Listening label, so a long playlist name scrolls too) around one `.scroll-text` span inside a `.cell`. At rest the text is inline and the clip box has `text-overflow: ellipsis`, so the browser draws the ellipsis and decides where to cut; this is also the no-JS state. On cell `pointerenter` (`hover: hover` and no reduced motion only), after 100ms the script adds `.scrolling` to each line marked `data-over`: the text becomes `inline-block`, the clip box switches to `text-overflow: clip`, and `.cell:hover` slides the text by `transform: translateX(var(--shift))`, linear, 30px/s, until its end shows, then it stops. Transform, not `text-indent`: Chrome doesn't repaint `background-clip: text` smoothly when `text-indent` moves it. Lines that fit stay still. On `pointerleave` the transform eases back over 400ms and `.scrolling` comes off on `transitionend` once the line has no running transitions (`getAnimations({ subtree: true })`, so a wash sweep back also finishes), or after 450ms when no transition ran. The native ellipsis returns as the text lands. Re-entering during the ease back cancels that cleanup. The title's wash sits on its `.scroll-text` span so the gradient moves with the text; the span lists both `transform` and `background-position` transitions so the sweep keeps its speed. Firefox draws no ellipsis on `background-clip: text`, so on an overflowing line that is not `.scrolling` and has no focus inside, the wash (title text, playlist link) is plain `ink` with no gradient. That looks the same as the wash at rest; the gradient returns while the line scrolls or has focus. The strip script's `fit()` sets `data-over`, `--shift` (the overflow: fractional widths rounded up) and `--dur` per line, plus `--wash-size` on the title since BaseLayout's ResizeObserver can't size an inline element. It runs once fonts load, on every live render and on window resize. Reduced motion: no scroll, the ellipsis stays.
+- Hover scroll (every cell, not only Listening; ≥ 900px only): each line is a clip box (`.scroll-clip`: the title link, the detail `dd` and the Listening label, so a long playlist name scrolls too) around one `.scroll-text` span inside a `.cell`. At rest the text is inline and the clip box has `text-overflow: ellipsis`, so the browser draws the ellipsis and decides where to cut; this is also the no-JS state. On cell `pointerenter` (`hover: hover` and no reduced motion only), after 100ms the script adds `.scrolling` to each line marked `data-over`: the text becomes `inline-block`, the clip box switches to `text-overflow: clip`, and `.cell:hover` slides the text by `transform: translateX(var(--shift))`, linear, 30px/s, until its end shows, then it stops. Transform, not `text-indent`: Chrome doesn't repaint `background-clip: text` smoothly when `text-indent` moves it. Lines that fit stay still. On `pointerleave` the transform eases back over 400ms and `.scrolling` comes off on `transitionend` once the line has no running transitions (`getAnimations({ subtree: true })`, so a wash sweep back also finishes), or after 450ms when no transition ran. The native ellipsis returns as the text lands. Re-entering during the ease back cancels that cleanup. The title's wash sits on its `.scroll-text` span so the gradient moves with the text; the span lists both `transform` and `background-position` transitions so the sweep keeps its speed. Firefox draws no ellipsis on `background-clip: text`, so on an overflowing line that is not `.scrolling` and has no focus inside, the wash (title text, playlist link) is plain `ink` with no gradient. That looks the same as the wash at rest; the gradient returns while the line scrolls or has focus. The strip script's `fit()` sets `data-over`, `--shift` (the overflow: fractional widths rounded up) and `--dur` per line, plus `--wash-size` on the title since BaseLayout's ResizeObserver can't size an inline element. It runs once fonts load, on every live render and on window resize. Reduced motion: no scroll, the ellipsis stays.
 - A failed fetch, a non-JSON body or state `error` keeps the fallback, or the last good data with its time recomputed. If that data is `playing`, it becomes `recent` with `playedAt` set to now, so "Listening now" never sticks.
 - No `aria-live`: a per-minute announcement would be noise.
 - `astro dev` has no `/api` route, so it only shows the fallback. Test with `npm run build && npx wrangler dev` and a filled `.dev.vars`.
@@ -237,7 +243,7 @@ Dots
 - `aria-label="Go to photo N"`, `aria-current="true"` on the active one. Each hit area is 14 x 24 centered on its dot. Negative margins keep the 6px visual gap, so the hit areas of two 5px neighbors overlap by 3px. 44px would overlap far more; the arrow keys are the keyboard path.
 
 Arrows
-- Desktop (≥ 900px) with `hover: hover` only. Not rendered on touch-only devices or below 900px.
+- Desktop (≥ 900px) with `hover: hover` only. Elsewhere they are in the HTML but `display: none`.
 - Two `<button>`s, "Previous photo" and "Next photo", 8px in from the left and right edges, vertically centered. Box 40 x 88, radius 6px, `bg` at 60%, no border.
 - Chevron 22 x 40, `ink`, stroke 2.25, round caps, with the `.icon-wash` hover (`--wash-size: 62`). It is `tallChevron` in `src/lib/icons.ts`, a 22 x 40 path, since stretching Lucide's square chevron would distort the stroke.
 - Hidden by default (opacity 0, `pointer-events: none`). They fade in over 180ms ease-out while the pointer is over the photo or the carousel has keyboard focus (`:hover` / `:has(:focus-visible)`, CSS only) and fade out on leave. Not `:focus-within`: a clicked arrow or dot keeps focus and would hold the arrows after the pointer leaves. Instant under reduced motion.
@@ -248,16 +254,17 @@ Script
 - Without JS the photos still swipe and scroll, and the dots and arrows stay `hidden`.
 
 **Resume**
-The file is `public/resume.pdf`. The page shows the PDF and a Download PDF button (`download="resume.pdf"`). No visible heading so the PDF gets the height; a screen-reader-only `<h1>Resume</h1>` keeps the page outline.
+The file is `public/resume.pdf`. The page shows the PDF and a Download PDF button (`download="Raymond-Cen-resume.pdf"`). No visible heading so the PDF gets the height; a screen-reader-only `<h1>Resume</h1>` keeps the page outline. Container: centered column, 16px gap, `px-6 py-2`, `sm:px-8`.
 
-- Desktop (≥ 900px): `<object data="/resume.pdf#navpanes=0&view=FitH" type="application/pdf">` with a `title` for screen readers and an "Open PDF" link as fallback content. Border `selected`, centered, max-width 860px so a letter page reads at about 100% in Chrome's viewer. The page uses `lockViewport`: the object fills the height between header and footer and the PDF scrolls inside it. On short windows the object shrinks rather than the page scrolling.
+- Desktop (≥ 900px): `<object data="/resume.pdf#navpanes=0&view=FitH" type="application/pdf">` with `title="Raymond Cen resume (PDF)"` and an "Open PDF" link as fallback content. 4px `selected` border, 4px radius, full width up to max-width 860px so a letter page reads at about 100% in Chrome's viewer. The page uses `lockViewport`: the object fills the height between header and footer and the PDF scrolls inside it. On short windows the object shrinks rather than the page scrolling.
 - Mobile (< 900px): no embed, since iOS Safari and most mobile browsers show one page or nothing. Instead a direct "Open PDF" link (new tab, `aria-label` ending "(opens in new tab)") and the Download button. The switch is Tailwind responsive classes, no JS.
-- Download button: `ink` fill, `bg` label, `.btn-wash` in global.css. Its `--wash-size` is a constant 226 (the button's fixed width plus height), since BaseLayout's observer only measures `.wash`.
+- Open PDF link: 18px, `.wash`, underlined in `sub` with a 4px offset.
+- Download button: fully rounded, padding 10px 20px, 18px label with a 20px `download` icon before it, `ink` fill, `bg` label, `.btn-wash` in global.css. Its `--wash-size` is a constant 226 (the button's fixed 186 x 40 box), since BaseLayout's observer only measures `.wash`.
 
 **嘉安 mark**
-Newsreader has no CJK glyphs. Use an inline SVG of the characters, not a CJK web font. A full CJK font is several MB and would break the 200 KB page budget. The mark is 嘉安 side by side, 嘉 left of 安. Glyphs are Noto Serif SC Bold converted to SVG paths; no font loads at runtime.
+Newsreader has no CJK glyphs, so the mark is an inline SVG of the characters, not a CJK web font (a full CJK font is several MB). The mark is 嘉安 side by side, 嘉 left of 安. Glyphs are Noto Serif SC Bold converted to SVG paths; no font loads at runtime.
 
-`src/assets/an.svg` has viewBox `0 0 1937 939` (landscape, about 2:1). Fill `#006930` sits on a wrapping `<g>`, not on each path, so the `fill="currentColor"` replace in `BaseLayout.astro` recolors both glyphs. `BaseLayout` also strips the C2PA metadata.
+`src/assets/an.svg` has viewBox `0 0 1937 939` (landscape, about 2:1). Fill `#006930` sits on a wrapping `<g>`, not on each path, so the `fill="currentColor"` replace in `BaseLayout.astro` recolors both glyphs. `BaseLayout` also strips the C2PA metadata and adds `width="87" height="42"` so the mark stays header-sized in any frame painted before the stylesheet applies; the `h-(--header-mark) w-auto` class overrides them.
 
 Favicon (`public/favicon.svg`, `favicon-32.png`, `apple-touch-icon.png`): 嘉安 side by side on the `#F7F6F0` rounded square, viewBox `0 0 1127 1127`. Known trade-off: 嘉 is illegible at 16px.
 
@@ -274,11 +281,12 @@ One row on every page, so "Raymond Cen" sits at the same y everywhere. Sizes are
 | `--header-back` | `2.25rem`, `3rem` from `sm` | Back chevron (`size-(--header-back)`) |
 
 - Header height is `2 x --header-pad + --header-row` (112px) on every page. The row is fixed, so the left slot never changes the header height.
+- The name "Raymond Cen" is a `<p>`, 30px (`text-3xl`), 500. It is not a link.
 - Grid is `1fr auto 1fr`: left slot, name, empty right column. `items-center` centers the mark, Back and the name on one vertical center.
 - The left slot is `justify-self-start`, so the mark and the Back link share the left edge (`px-6`, `sm:px-8`).
 - Back text is `text-lg` below `sm` and `text-2xl` from `sm`. Below `sm` the link also has `pr-4` so it keeps a gap before the name.
 - From `sm` the mark fills the row: 56px tall, about 116px wide. Below `sm` it is 42px tall and has `pr-4`, matching Back.
-- Header and footer are sticky with a `bg` background. The mark stays inside the header, so content never scrolls under it.
+- Header and footer are sticky with a `bg` background (header `z-10`). The mark stays inside the header, so content never scrolls under it.
 - Change a size by editing the variable, not the classes. Content taller than `--header-row` overflows the row instead of growing the header.
 - At 375px "Raymond Cen" fits on one line on every page.
 - No skip link. The header holds at most one link (Back), so keyboard users reach the content in one Tab.
@@ -295,13 +303,15 @@ One row of icons, centered (`justify-center gap-8`). The padding is a CSS variab
 - The home nav centers in the viewport, not just in main: its bottom padding adds header height minus footer height, computed from both sets of variables. Change the footer padding through `--footer-pad` so the nav stays centered.
 
 **Fonts**
-Self-host Newsreader (Fontsource package), use `font-display: swap` and preload the regular weight. Only weights 400, 400 italic (dates), 500 and 600 are used.
+Newsreader is self-hosted through Fontsource (`font-display: swap`, the Fontsource default). `BaseLayout` preloads the regular weight (`newsreader-latin-400-normal.woff2`). Only weights 400, 400 italic (dates), 500 and 600 are used.
 
-**Home page SEO**
-Home shows no positioning text. Home title: "Raymond Cen". The home meta description and Open Graph description must carry the positioning (CS and Data Science, Oregon State). Other pages use "<Page> | Raymond Cen" (404: "404 | Raymond Cen"). Home's meta description is final. The other pages' meta descriptions are still `[bracketed]` placeholders.
+**Meta and SEO**
+Home shows no positioning text and has a screen-reader-only `<h1>Raymond Cen</h1>`. Home title: "Raymond Cen". Home description (also the Open Graph description), final: "Computer Science student at Oregon State University focused on data science and machine learning. Projects, experience and contact info." Other pages use "<Page> | Raymond Cen" (404: "404 | Raymond Cen"), and their meta descriptions are still `[bracketed]` placeholders.
+
+`BaseLayout` emits on every page: description, canonical URL (from `site: 'https://rcen.dev'`), Open Graph title, description, URL, `website` type, site name "Raymond Cen" and `og-image.png` (1200 x 630, alt still `Raymond Cen, [tagline]`), `twitter:card` `summary_large_image`, the three favicons and `noindex` when the page passes it.
 
 **Nav**
-The nav shows on `/` only, in this order: Resume, Experience, Projects, About. Resume is first because it is what most recruiters want. There is no Home item: `/` is the nav, and every other page returns to it through Back. The header name is not a link.
+The nav shows on `/` only, in this order: Resume, Experience, Projects, About. It is centered in a one-cell grid, 48px (`text-5xl`), 60px from `sm`, 500, line-height 1.55, each item a `.wash` link. Resume is first because it is what most recruiters want. There is no Home item: `/` is the nav, and every other page returns to it through Back. The header name is not a link.
 
 No `aria-current="page"`: the nav renders on `/` only and has no Home item, so it never links to the current page.
 
@@ -311,9 +321,8 @@ LinkedIn and GitHub open in a new tab (`target="_blank" rel="noopener noreferrer
 **Email spam protection**
 Scrapers harvest addresses from `mailto:` links and plain text in HTML. Approach:
 - The footer shows a Cloudflare Email Routing alias on `rcen.dev`, never the personal address. A spammed alias is disabled and replaced without touching the inbox.
-- The address never appears in the built HTML. The repo and `dist` hold only its parts (for example user and domain stored separately), and a small inline script joins them and inserts the footer email link on page load. This is the one exception to the no client-side JS rule, since the protection can't work without it.
-- Without JS the email icon is not rendered. LinkedIn stays as the contact path.
-- After deploy, check that the full address does not appear in view-source or in `curl https://rcen.dev`.
+- The address never appears in the built HTML. The repo and `dist` hold only its parts (for example user and domain stored separately), and a small inline script joins them and inserts the footer email link on page load. The protection can't work without JS.
+- Without JS the email item stays `hidden`. LinkedIn stays as the contact path.
 
 **404 page**
 `/404`: same header and footer. Centered between them, a large "404" in `selected` (`font-medium`, `text-8xl`, `sm:text-9xl`) with "This page doesn't exist" below in `ink` (`text-xl`, `sm:text-2xl`). Nothing else: the header Back link is the way home. `wrangler.jsonc` sets `not_found_handling: "404-page"`, so unknown routes get `404.html` with a 404 status.
@@ -324,7 +333,7 @@ Scrapers harvest addresses from `mailto:` links and plain text in HTML. Approach
 - Logic: call `/me/player/currently-playing`. A track with `is_playing: true` gives state `playing`. A paused track gives state `recent` with `playedAt` from `timestamp`. Anything else (204, episode, ad, null item) compares the KV entry below with `/me/player/recently-played?limit=1` (`played_at`) and returns the newer as `recent`, or whichever exists. A paused song is never replaced by an older one after Spotify drops the session.
 - KV: binding `NOW_PLAYING`, key `last`, `{ trackId, track, artists, trackUrl, playlistId, playlistName, playing, at }`. Saved whenever currently-playing returns a track, only when `trackId` or `playing` changed. `at` (ms) is now when playing starts, `timestamp` for a pause. A KV failure is logged and the endpoint continues with recently-played alone.
 - Cron: `scheduled()` runs every minute, so plays and pauses are recorded while nobody is on the site. It gets an access token, calls currently-playing and saves a returned track to KV with the same rules as the endpoint. It never reads or writes the edge cache. Every failure is caught and logged with `console.error`.
-- Response: `{ state, track, artists, trackId, trackUrl, playlistId, playlistName, playedAt }`. `artists` is the names joined with ", ". `trackUrl` is the track's `external_urls.spotify`. `playlistId` is the id from `context.uri` when `context.type` is `playlist`, else null. `playlistName` is fetched from `/v1/playlists/{id}?fields=name` only while playing, and kept per id in module scope (successes only). It is null when paused, outside a playlist, or when the call fails, as it does for Spotify-owned playlists. `playedAt` is null while playing.
+- Response: `{ state, track, artists, trackId, trackUrl, playlistId, playlistName, playedAt }`. `artists` is the names joined with ", ". `trackUrl` is the track's `external_urls.spotify`. `playlistId` is the id from `context.uri` when `context.type` is `playlist`, else null. `playlistName` is fetched from `/v1/playlists/{id}?fields=name` only while playing, and kept per id in module scope (successes only). It is null when paused, outside a playlist or when the call fails, as it does for Spotify-owned playlists. `playedAt` is null while playing.
 - Caching: JSON is stored in `caches.default` keyed on the request URL for 15s with `Cache-Control: public, max-age=15`. Browsers get `Cache-Control: no-store` on every response, hit or miss. Spotify calls time out after 5s and the page's fetch after 10s.
 - Browser Cache TTL: the zone setting (Cloudflare dashboard, Caching > Configuration) is "Respect Existing Headers", so every route sets its own `Cache-Control`. The default (4h) raises any lower max-age on responses served from Cloudflare's cache, which pinned an old track in browsers. The endpoint's `no-store` keeps it safe if the setting is ever reset.
 - Errors: any Spotify failure or missing secret returns 503 `{ "state": "error" }`, cached 10s. Tokens and Spotify error bodies are never exposed.
@@ -337,14 +346,14 @@ Scrapers harvest addresses from `mailto:` links and plain text in HTML. Approach
 3. `.dev.vars` is gitignored. Never commit it or paste its values into a terminal command.
 
 **2. Run the Worker locally**
-1. `npm run build && npx wrangler dev`, then open `http://localhost:8787`.
+1. `npm run build && npx wrangler dev` (or `npm run full-prev`, which runs both), then open `http://localhost:8787`.
 2. `astro dev` has no `/api` route, so the Listening cell only shows the frontmatter fallback there.
 3. `wrangler dev` reads `.dev.vars` and uses a local KV store that starts empty, not the production one.
 
 **3. Check the endpoint**
 1. Open `http://localhost:8787/api/now-playing`.
 2. Add `?t=<any number>` to skip the edge cache. The cache is keyed on the full URL (15s for data, 10s for errors).
-3. Errors print in the `wrangler dev` terminal as `now-playing failed: <reason>` or `kv failed: <reason>`, and from the cron as `scheduled failed: <reason>`.
+3. Errors print in the `wrangler dev` terminal as `now-playing failed: <reason>`, `kv failed: <reason>` or `playlist failed: <reason>`, and from the cron as `scheduled failed: <reason>`.
 
 **4. Trigger the cron by hand**
 1. The schedule never runs on its own in `wrangler dev`. Open `http://localhost:8787/cdn-cgi/local/scheduled` to run it once.
@@ -362,3 +371,7 @@ Scrapers harvest addresses from `mailto:` links and plain text in HTML. Approach
 2. Update production secrets with `npx wrangler secret bulk .dev.vars`, never by pasting values.
 3. Live logs: `npx wrangler tail`. Stored value: `npx wrangler kv key get last --binding NOW_PLAYING --remote`
 4. Past cron runs: Workers & Pages > portfolio > Settings > Trigger Events > View events.
+
+## 6. Future
+
+- A possible ML/DL chatbot (RAG with hybrid search) hosted on the site. This is why the site runs on Cloudflare Workers instead of Pages: a Worker can serve it alongside the static assets.
