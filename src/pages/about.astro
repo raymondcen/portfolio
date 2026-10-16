@@ -84,7 +84,7 @@ const arrow = `arrow absolute top-1/2 flex h-22 w-10 -translate-y-1/2 cursor-poi
     <section aria-labelledby="currently" class="rounded-[10px] bg-panel min-[900px]:py-[22px]">
       <h2 id="currently" class="sr-only">Currently</h2>
       {/* 2 x 2 on mobile, 4 columns on desktop, with divider lines between cells only */}
-      <dl class="grid grid-cols-2 min-[900px]:grid-cols-4">
+      <dl data-strip class="grid grid-cols-2 min-[900px]:grid-cols-4">
         {cells.map((cell, i) => (
           <div
             data-np-cell={i === 0 ? '' : undefined}
@@ -100,7 +100,11 @@ const arrow = `arrow absolute top-1/2 flex h-22 w-10 -translate-y-1/2 cursor-poi
                   align-middle centers on the x-height, which sits low against uppercase text */}
               {i === 0 && <span data-np-dot hidden class="mr-1.5 size-[7px] shrink-0 rounded-full bg-selected"></span>}
               {/* Listening label: a scroll line, since "Listening now · {playlist}" can overflow */}
-              <span data-np-label={i === 0 ? '' : undefined} class:list={[i === 0 && 'scroll-line block min-w-0 truncate']}>{cell.label}</span>
+              {i === 0 ? (
+                <span class="scroll-clip min-w-0"><span data-np-label class="scroll-text">{cell.label}</span></span>
+              ) : (
+                <span>{cell.label}</span>
+              )}
             </dt>
             <dd class="min-w-0">
               {/* No url: an <a> without href is not a link or focusable, and gives the live script an element to fill */}
@@ -108,12 +112,12 @@ const arrow = `arrow absolute top-1/2 flex h-22 w-10 -translate-y-1/2 cursor-poi
                 href={cell.url}
                 title={cell.title}
                 {...cell.url && { target: '_blank', rel: 'noopener noreferrer', 'aria-label': `${cell.title} (opens in new tab)` }}
-                class:list={['inline-block max-w-full truncate align-top text-lg min-[900px]:text-xl', focusRing, cell.url ? 'wash' : 'text-ink']}
+                class:list={['scroll-clip inline-block max-w-full align-top text-lg text-ink min-[900px]:text-xl', focusRing]}
                 data-np-link={i === 0 ? '' : undefined}
-              ><span data-np-title={i === 0 ? '' : undefined} class="scroll-line block truncate">{cell.title}</span></a>
+              ><span data-np-title={i === 0 ? '' : undefined} class:list={['scroll-text', cell.url && 'wash']}>{cell.title}</span></a>
             </dd>
-            <dd class="truncate text-sm text-sub min-[900px]:text-[15px]" title={cell.detail} data-np-detail={i === 0 ? '' : undefined}>
-              <span class="scroll-line block truncate">{cell.detail}</span>
+            <dd class="scroll-clip text-sm text-sub min-[900px]:text-[15px]" title={cell.detail} data-np-detail={i === 0 ? '' : undefined}>
+              <span class="scroll-text">{cell.detail}</span>
             </dd>
           </div>
         ))}
@@ -150,7 +154,8 @@ const arrow = `arrow absolute top-1/2 flex h-22 w-10 -translate-y-1/2 cursor-poi
           });
           // No wrap-around: hide Previous on the first photo and Next on the last
           for (const [button, end] of [[prev, i === 0], [next, i === last]]) {
-            if (end && document.activeElement === button) track.focus();
+            // preventScroll: a plain focus() scrolls the track into view, which cancels the smooth scroll mid-slide
+            if (end && document.activeElement === button) track.focus({ preventScroll: true });
             button.hidden = end;
           }
         }
@@ -189,26 +194,58 @@ const arrow = `arrow absolute top-1/2 flex h-22 w-10 -translate-y-1/2 cursor-poi
       {
         const $ = (name) => document.querySelector(`[data-np-${name}]`);
         const [dot, label, link, title, detail] = ['dot', 'label', 'link', 'title', 'detail'].map($);
-        const lines = document.querySelectorAll('.cell .scroll-line');
+        const clips = document.querySelectorAll('.cell .scroll-clip');
         let np;
 
-        // Hover scroll: each line that overflows gets its overflow as --shift and a 30px/s duration as --dur.
-        // Fractional widths from a Range, rounded up: scrollWidth rounds, and a line left even 0.3px over
-        // still overflows, so the ellipsis eats its last letter. A negative text-indent doesn't change the text's width,
-        // so this measures correctly even mid-scroll
-        const range = document.createRange();
+        // Each line that overflows gets data-over (it scrolls), its overflow as --shift and a 30px/s duration as --dur.
+        // Fractional widths rounded up, so no sub-pixel overflow stops the scroll short of the last letter.
+        // A transform doesn't change widths, so this measures correctly even mid-scroll
         function fit() {
-          for (const el of lines) {
-            range.selectNodeContents(el);
-            const over = Math.ceil(range.getBoundingClientRect().width - el.getBoundingClientRect().width);
-            el.style.setProperty('--shift', over > 0 ? `${-over}px` : '0px');
-            el.style.setProperty('--dur', `${Math.max(over, 0) / 30}s`);
+          for (const clip of clips) {
+            const text = clip.firstElementChild;
+            const { width, height } = text.getBoundingClientRect();
+            const over = Math.max(Math.ceil(width - clip.getBoundingClientRect().width), 0);
+            clip.toggleAttribute('data-over', over > 0);
+            text.style.setProperty('--shift', `${-over}px`);
+            text.style.setProperty('--dur', `${over / 30}s`);
+            // BaseLayout's ResizeObserver can't size an inline element, so the title's wash is sized here
+            if (text.classList.contains('wash')) text.style.setProperty('--wash-size', Math.round(width + height));
           }
         }
         addEventListener('resize', fit);
         // Measure the static cells once the web fonts have set their widths
         document.fonts.ready.then(fit);
         let timer;
+
+        // Hover scroll. At rest each line is inline text in its clip box, so the browser draws the ellipsis.
+        // 100ms into a hover, each overflowing line gets .scrolling (inline-block, no ellipsis, wash painted) and :hover
+        // slides it. On leave it eases back, and .scrolling comes off once it lands and any wash sweep back has ended,
+        // so the ellipsis returns exactly then
+        const motion = matchMedia('(hover: hover) and (prefers-reduced-motion: no-preference)');
+        for (const cell of document.querySelectorAll('.cell')) {
+          let hovered, enter, leave;
+          const rest = (clip) => {
+            if (!clip.getAnimations({ subtree: true }).length) clip.classList.remove('scrolling');
+          };
+          cell.addEventListener('pointerenter', () => {
+            if (!motion.matches) return;
+            hovered = true;
+            clearTimeout(leave);
+            enter = setTimeout(() => {
+              for (const clip of cell.querySelectorAll('.scroll-clip[data-over]')) clip.classList.add('scrolling');
+            }, 100);
+          });
+          cell.addEventListener('pointerleave', () => {
+            hovered = false;
+            clearTimeout(enter);
+            // For lines that never moved, so no transition ends. Lines still moving wait for their transitionend
+            leave = setTimeout(() => cell.querySelectorAll('.scrolling').forEach(rest), 450);
+          });
+          cell.addEventListener('transitionend', (e) => {
+            const clip = e.target.closest('.scrolling');
+            if (!hovered && clip) rest(clip);
+          });
+        }
 
         // Playlist link in the "Listening now" label. One element, and the label is rebuilt only when the playlist changes,
         // so a 30s tick never drops its focus or hover. The ring is inset: the label clips anything outside its box
@@ -256,13 +293,19 @@ const arrow = `arrow absolute top-1/2 flex h-22 w-10 -translate-y-1/2 cursor-poi
           link.rel = 'noopener noreferrer';
           link.title = title.textContent = np.track;
           link.setAttribute('aria-label', `${np.track} (opens in new tab)`);
-          // Adding .wash adds its transition while background-position jumps from the default to 100% 0,
-          // which would sweep on every load. Apply it with no transition so only hover and focus sweep
-          const swapped = link.classList.replace('text-ink', 'wash');
-          if (swapped) link.style.transition = 'none';
-          // BaseLayout sizes washes present at load; this one changes with every track
-          link.style.setProperty('--wash-size', link.offsetWidth + link.offsetHeight);
-          if (swapped) link.style.transition = '';
+          // The wash sits on the title text, which moves on hover. Adding .wash adds its transition while
+          // background-position jumps from the default to 100% 0, which would sweep on every load.
+          // Apply it with no transition so only hover and focus sweep
+          const added = !title.classList.contains('wash');
+          if (added) {
+            title.style.transition = 'none';
+            title.classList.add('wash');
+          }
+          // fit() below sizes the wash
+          if (added) {
+            title.offsetWidth;
+            title.style.transition = '';
+          }
 
           detail.title = detail.firstElementChild.textContent = np.artists;
           fit();
@@ -350,16 +393,51 @@ const arrow = `arrow absolute top-1/2 flex h-22 w-10 -translate-y-1/2 cursor-poi
   }
 
   /* Currently cells: hovering a cell slides each overflowing line left at 30px/s until its end shows, then it stops.
-     The script sets --shift and --dur. text-indent, not transform: a transform can't move inline text,
-     and moving a whole child box would lose the ellipsis at rest. Leaving eases back to the start */
-  .scroll-line {
-    transition: text-indent 400ms ease-out;
+     Each line is a clip box (.scroll-clip) around its text (.scroll-text). At rest, and without JS, the text is inline
+     and the browser draws the ellipsis. The script adds .scrolling to an overflowing line while it scrolls: the text
+     becomes an inline-block, which transform can move (smooth in Chrome, unlike text-indent under background-clip: text),
+     and the ellipsis is off, since a native one would hide the whole inline-block. The wash lives on the title text
+     so its gradient moves with it. The script sets --shift and --dur. Leaving eases back to the start */
+  .scroll-clip {
+    display: block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
   }
+  /* The title link shrinks to its text, up to the cell width */
+  a.scroll-clip {
+    display: inline-block;
+  }
+  .scroll-clip.scrolling {
+    text-overflow: clip;
+  }
+  /* Lists background-position so the title's wash keeps its sweep (0s on lines without one) */
+  .scroll-text {
+    transition: transform 400ms ease-out, background-position var(--wash-duration, 0s) linear;
+  }
+  .scrolling > .scroll-text {
+    display: inline-block;
+    vertical-align: top;
+  }
+  /* Firefox draws no ellipsis on background-clip: text, so an overflowing line's wash (title text, playlist link)
+     paints plain ink at rest, which looks the same. The gradient returns while the line scrolls or has focus */
+  .scroll-clip[data-over]:not(.scrolling, :focus-within) :global(.wash) {
+    background-image: none;
+    color: var(--color-ink);
+  }
+  /* The wash link's hover and focus sweep its text, not the link box */
+  @media (hover: hover) {
+    a:hover > .wash { background-position: 0 100%; }
+  }
+  a:focus-visible > .wash { background-position: 0 100%; }
   @media (hover: hover) and (prefers-reduced-motion: no-preference) {
-    .cell:hover .scroll-line {
-      text-indent: var(--shift, 0px);
-      transition: text-indent var(--dur, 0s) linear 100ms;
+    .cell:hover .scrolling > .scroll-text {
+      transform: translateX(var(--shift, 0px));
+      transition: transform var(--dur, 0s) linear, background-position var(--wash-duration, 0s) linear;
     }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .scroll-text { transition: none; }
   }
 
   /* Desktop: the bio matches the photo's top and height. Size containment drops its content height,
