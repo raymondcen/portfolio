@@ -30,6 +30,8 @@
   @media (width >= 40rem) { --footer-pad: 2rem; }
   /* Wash speed: time per pixel of element width + height. Lower is faster. */
   --wash-ms-per-px: 1.65ms;
+  /* Mobile marquee: space between the end of the text and its repeat. Speed is SPEED in src/scripts/marquee.ts */
+  --marquee-gap: 3rem;
 }
 
 /* Anchors and keyboard focus land below the sticky header */
@@ -120,4 +122,19 @@ img {
 .btn-wash:focus-visible { background-position: 0 100%; }
 @media (prefers-reduced-motion: reduce) {
   .btn-wash { transition: none; }
+}
+
+/* Mobile marquee (src/scripts/marquee.ts): a [data-marquee] box whose one line overflows gets .marquee and an aria-hidden
+   copy of its text. Both slide left by one copy plus the gap and repeat, so the copy lands exactly where the text began.
+   The script sets --marquee-dur. The box itself must clip: overflow hidden, nowrap, and text-overflow clip while .marquee */
+.marquee > * {
+  display: inline-block;
+  vertical-align: top;
+  animation: marquee var(--marquee-dur) linear infinite;
+}
+.marquee > * + * {
+  margin-left: var(--marquee-gap);
+}
+@keyframes marquee {
+  to { transform: translateX(calc(-100% - var(--marquee-gap))); }
 }

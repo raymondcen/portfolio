@@ -101,7 +101,7 @@ const arrow = `arrow absolute top-1/2 flex h-22 w-10 -translate-y-1/2 cursor-poi
               {i === 0 && <span data-np-dot hidden class="mr-1.5 size-[7px] shrink-0 rounded-full bg-selected"></span>}
               {/* Listening label: a scroll line, since "Listening now · {playlist}" can overflow */}
               {i === 0 ? (
-                <span class="scroll-clip min-w-0"><span data-np-label class="scroll-text">{cell.label}</span></span>
+                <span data-marquee class="scroll-clip min-w-0"><span data-np-label class="scroll-text">{cell.label}</span></span>
               ) : (
                 <span>{cell.label}</span>
               )}
@@ -111,12 +111,13 @@ const arrow = `arrow absolute top-1/2 flex h-22 w-10 -translate-y-1/2 cursor-poi
               <a
                 href={cell.url}
                 title={cell.title}
+                data-marquee
                 {...cell.url && { target: '_blank', rel: 'noopener noreferrer', 'aria-label': `${cell.title} (opens in new tab)` }}
                 class:list={['scroll-clip inline-block max-w-full align-top text-lg text-ink min-[900px]:text-xl', focusRing]}
                 data-np-link={i === 0 ? '' : undefined}
               ><span data-np-title={i === 0 ? '' : undefined} class:list={['scroll-text', cell.url && 'wash']}>{cell.title}</span></a>
             </dd>
-            <dd class="scroll-clip text-sm text-sub min-[900px]:text-[15px]" title={cell.detail} data-np-detail={i === 0 ? '' : undefined}>
+            <dd data-marquee class="scroll-clip text-sm text-sub min-[900px]:text-[15px]" title={cell.detail} data-np-detail={i === 0 ? '' : undefined}>
               <span class="scroll-text">{cell.detail}</span>
             </dd>
           </div>
@@ -220,8 +221,8 @@ const arrow = `arrow absolute top-1/2 flex h-22 w-10 -translate-y-1/2 cursor-poi
         // Hover scroll. At rest each line is inline text in its clip box, so the browser draws the ellipsis.
         // 100ms into a hover, each overflowing line gets .scrolling (inline-block, no ellipsis, wash painted) and :hover
         // slides it. On leave it eases back, and .scrolling comes off once it lands and any wash sweep back has ended,
-        // so the ellipsis returns exactly then
-        const motion = matchMedia('(hover: hover) and (prefers-reduced-motion: no-preference)');
+        // so the ellipsis returns exactly then. Desktop only: below 900px the marquee scrolls the lines instead
+        const motion = matchMedia('(hover: hover) and (prefers-reduced-motion: no-preference) and (min-width: 900px)');
         for (const cell of document.querySelectorAll('.cell')) {
           let hovered, enter, leave;
           const rest = (clip) => {
@@ -338,6 +339,10 @@ const arrow = `arrow absolute top-1/2 flex h-22 w-10 -translate-y-1/2 cursor-poi
       }
     </script>
   )}
+  {/* Mobile auto-scroll for the strip's [data-marquee] lines */}
+  <script>
+    import '../scripts/marquee';
+  </script>
 </BaseLayout>
 
 <style>
@@ -408,7 +413,8 @@ const arrow = `arrow absolute top-1/2 flex h-22 w-10 -translate-y-1/2 cursor-poi
   a.scroll-clip {
     display: inline-block;
   }
-  .scroll-clip.scrolling {
+  /* .marquee: the mobile loop (src/scripts/marquee.ts) */
+  .scroll-clip:is(.scrolling, .marquee) {
     text-overflow: clip;
   }
   /* Lists background-position so the title's wash keeps its sweep (0s on lines without one) */
@@ -421,7 +427,7 @@ const arrow = `arrow absolute top-1/2 flex h-22 w-10 -translate-y-1/2 cursor-poi
   }
   /* Firefox draws no ellipsis on background-clip: text, so an overflowing line's wash (title text, playlist link)
      paints plain ink at rest, which looks the same. The gradient returns while the line scrolls or has focus */
-  .scroll-clip[data-over]:not(.scrolling, :focus-within) :global(.wash) {
+  .scroll-clip[data-over]:not(.scrolling, .marquee, :focus-within) :global(.wash) {
     background-image: none;
     color: var(--color-ink);
   }
