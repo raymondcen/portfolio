@@ -95,9 +95,10 @@ const arrow = `arrow absolute top-1/2 flex h-22 w-10 -translate-y-1/2 cursor-poi
               i < 3 ? 'min-[900px]:border-r' : 'min-[900px]:border-r-0',
             ]}
           >
-            <dt class="text-xs tracking-[0.08em] text-sub uppercase min-[900px]:text-[13px]">
-              {/* The live script swaps the Listening label's text and shows the dot */}
-              {i === 0 && <span data-np-dot hidden class="mr-1.5 inline-block size-[7px] rounded-full bg-selected align-middle"></span>}<span data-np-label={i === 0 ? '' : undefined}>{cell.label}</span>
+            <dt class="flex items-center text-xs tracking-[0.08em] text-sub uppercase min-[900px]:text-[13px]">
+              {/* The live script swaps the Listening label's text and shows the dot. Flex centers the dot on the line box;
+                  align-middle centers on the x-height, which sits low against uppercase text */}
+              {i === 0 && <span data-np-dot hidden class="mr-1.5 size-[7px] shrink-0 rounded-full bg-selected"></span>}<span data-np-label={i === 0 ? '' : undefined}>{cell.label}</span>
             </dt>
             <dd class="min-w-0">
               {/* No url: an <a> without href is not a link or focusable, and gives the live script an element to fill */}
